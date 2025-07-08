@@ -174,7 +174,7 @@ npm test
 
 ### Backend
 - If port 8080 is in use, modify `server.port` in `application.properties`
-- For database connection issues, ensure PostgreSQL is running
+- For database connection issues, ensure MSSQL is running
 
 ### Frontend
 - If port 3000 is in use, Vite will automatically suggest another port
