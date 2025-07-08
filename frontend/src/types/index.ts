@@ -21,7 +21,8 @@ export interface Collection {
 export interface User {
   id: number;
   email: string;
-  name: string;
+  username: string;
+  fullName: string;
   role: 'user' | 'admin';
   createdAt: string;
   updatedAt: string;
@@ -29,10 +30,20 @@ export interface User {
 }
 
 export interface AuthCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
-export interface RegisterData extends AuthCredentials {
-  name: string;
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  username: string;
+  email: string;
+  fullName: string;
 }

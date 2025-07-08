@@ -3,16 +3,18 @@ import { useBookmarks } from '../../context/BookmarkContext';
 import { useAuth } from '../../context/AuthContext';
 import { Bookmark, ListPlus, User, Search } from 'lucide-react'; // Added new icons
 import { ShimmerButton } from '../ui/shimmer-button';
+import UserProfilePopup from '../auth/UserProfilePopup';
 
 interface HeaderProps {
   openLoginModal: () => void;
+  openRegisterModal: () => void;
   openSettingsModal: () => void;
-  // openRegisterModal is removed as it's not used in the new design
 }
 
-const Header: React.FC<HeaderProps> = ({ openLoginModal, openSettingsModal }) => {
+const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, openSettingsModal }) => {
   const { searchTerm, setSearchTerm, openModal } = useBookmarks();
-  const { user: currentUser, loginAsAdmin } = useAuth();
+  const { user: currentUser } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value); // setSearchTerm is from useBookmarks context
@@ -20,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openSettingsModal }) =>
 
   const handleProfileClick = () => {
     if (currentUser) {
-      openSettingsModal();
+      setIsProfileOpen(true);
     } else {
       openLoginModal();
     }
@@ -47,17 +49,6 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openSettingsModal }) =>
 
       {/* Action Buttons */}
       <div className="flex items-center gap-1">
-        {/* Temporary Admin Login Button */}
-        {!currentUser && (
-          <button
-            onClick={loginAsAdmin}
-            className="px-3 py-1.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium"
-            title="Login as Demo Admin"
-          >
-            Demo Admin
-          </button>
-        )}
-        
         <button
           onClick={() => openModal()}
           className="p-2 text-muted-foreground hover:text-foreground rounded transition-colors"
@@ -79,6 +70,11 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openSettingsModal }) =>
           )}
         </button>
       </div>
+      
+      {/* User Profile Popup */}
+      {isProfileOpen && (
+        <UserProfilePopup onClose={() => setIsProfileOpen(false)} />
+      )}
     </div>
   );
 };

@@ -1,25 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   getUsers,
-  getUserStats,
-  updateUser,
-  deleteUser,
-  toggleUserStatus,
-  sendNotification,
-  UserWithStats
+  getDashboard,
+  deleteUser
 } from '../api/adminApi';
 import { useAuth } from '../context/AuthContext';
+import { useRoleAccess } from '../hooks/useRoleAccess';
 import { Users, Shield, Activity, UserPlus, MoreHorizontal } from 'lucide-react';
+import { User } from '../types';
 
 const AdminPage = () => {
   const { user } = useAuth();
-  const [users, setUsers] = useState<UserWithStats[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const { isAdmin } = useRoleAccess();
+  const [users, setUsers] = useState<User[]>([]);
+  const [dashboardMessage, setDashboardMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user is admin
-  if (user?.role !== 'admin') {
+  // Check if user is admin using JWT roles
+  if (!isAdmin) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
@@ -36,59 +35,17 @@ const AdminPage = () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Mock data for development since backend might not be implemented yet
-        const mockUsers: UserWithStats[] = [
-          {
-            id: 1,
-            name: 'John Doe',
-            email: 'john@example.com',
-            role: 'user',
-            createdAt: '2024-01-15T10:30:00Z',
-            updatedAt: '2024-01-20T14:45:00Z',
-            lastLogin: '2024-01-20T14:45:00Z',
-            bookmarkCount: 25,
-            collectionCount: 5,
-            isActive: true
-          },
-          {
-            id: 2,
-            name: 'Jane Smith',
-            email: 'jane@example.com',
-            role: 'admin',
-            createdAt: '2024-01-10T08:15:00Z',
-            updatedAt: '2024-01-21T16:20:00Z',
-            lastLogin: '2024-01-21T16:20:00Z',
-            bookmarkCount: 42,
-            collectionCount: 8,
-            isActive: true
-          },
-          {
-            id: 3,
-            name: 'Bob Wilson',
-            email: 'bob@example.com',
-            role: 'user',
-            createdAt: '2024-01-12T12:00:00Z',
-            updatedAt: '2024-01-18T09:30:00Z',
-            lastLogin: '2024-01-18T09:30:00Z',
-            bookmarkCount: 8,
-            collectionCount: 2,
-            isActive: false
-          }
-        ];
+        // First call dashboard endpoint
+        console.log('Calling dashboard endpoint...');
+        const dashboardMessage = await getDashboard();
+        setDashboardMessage(dashboardMessage);
+        console.log('Dashboard response:', dashboardMessage);
 
-        const mockStats = {
-          totalUsers: 3,
-          activeUsers: 2,
-          inactiveUsers: 1,
-          adminUsers: 1,
-          newUsersThisMonth: 2
-        };
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        setUsers(mockUsers);
-        setStats(mockStats);
+        // Then call users endpoint
+        console.log('Calling users endpoint...');
+        const fetchedUsers = await getUsers();
+        setUsers(fetchedUsers);
+        console.log('Users response:', fetchedUsers);
       } catch (error) {
         console.error('Failed to fetch data', error);
         setError('Failed to load user data. Please try again.');
@@ -100,29 +57,49 @@ const AdminPage = () => {
     fetchData();
   }, []);
 
-  const handleToggleStatus = async (userId: number) => {
+  const handleDeleteUser = async (userId: number) => {
     try {
-      // Mock implementation - in real app this would call the API
-      setUsers(users.map(user => 
-        user.id === userId 
-          ? { ...user, isActive: !user.isActive }
-          : user
-      ));
+      const result = await deleteUser(userId);
+      console.log(result); // Log the success message
       
-      // Update stats
-      const toggledUser = users.find(u => u.id === userId);
-      if (toggledUser) {
-        setStats((prev: any) => ({
-          ...prev,
-          activeUsers: toggledUser.isActive ? prev.activeUsers - 1 : prev.activeUsers + 1,
-          inactiveUsers: toggledUser.isActive ? prev.inactiveUsers + 1 : prev.inactiveUsers - 1
-        }));
+      // Remove user from local state
+      if (Array.isArray(users)) {
+        setUsers(users.filter(user => user.id !== userId));
       }
     } catch (error) {
-      console.error('Failed to toggle status', error);
-      setError('Failed to update user status.');
+      console.error('Failed to delete user', error);
+      setError('Failed to delete user.');
     }
   };
+
+  // Calculate stats from users data using useMemo
+  const stats = useMemo(() => {
+    // Check if users is an array before filtering
+    if (!Array.isArray(users)) {
+      return {
+        totalUsers: 0,
+        adminUsers: 0,
+        userRoleCount: 0,
+        newUsersThisMonth: 0
+      };
+    }
+
+    const totalUsers = users.length;
+    const adminUsers = users.filter(user => user.role === 'admin').length;
+    const userRoleCount = users.filter(user => user.role === 'user').length;
+    
+    return {
+      totalUsers,
+      adminUsers,
+      userRoleCount,
+      newUsersThisMonth: users.filter(user => {
+        const createdDate = new Date(user.createdAt);
+        const now = new Date();
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return createdDate >= monthAgo;
+      }).length
+    };
+  }, [users]);
 
   if (isLoading) {
     return (
@@ -162,6 +139,11 @@ const AdminPage = () => {
           User Management
         </h1>
         <p className="text-white/70">Manage users, roles, and permissions</p>
+        {dashboardMessage && (
+          <div className="mt-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
+            <p className="text-green-300">{dashboardMessage}</p>
+          </div>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -179,8 +161,8 @@ const AdminPage = () => {
         <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/70 text-sm font-medium">Active Users</p>
-              <p className="text-2xl font-bold text-white">{stats?.activeUsers || 0}</p>
+              <p className="text-white/70 text-sm font-medium">User Role</p>
+              <p className="text-2xl font-bold text-white">{stats?.userRoleCount || 0}</p>
             </div>
             <Activity className="h-8 w-8 text-green-400" />
           </div>
@@ -219,18 +201,17 @@ const AdminPage = () => {
               <tr>
                 <th className="text-left py-4 px-6 text-white/70 font-medium">User</th>
                 <th className="text-left py-4 px-6 text-white/70 font-medium">Role</th>
-                <th className="text-left py-4 px-6 text-white/70 font-medium">Status</th>
-                <th className="text-left py-4 px-6 text-white/70 font-medium">Bookmarks</th>
-                <th className="text-left py-4 px-6 text-white/70 font-medium">Last Login</th>
+                <th className="text-left py-4 px-6 text-white/70 font-medium">Created At</th>
                 <th className="text-left py-4 px-6 text-white/70 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user, index) => (
-                <tr key={user.id} className={`border-b border-white/10 ${index % 2 === 0 ? 'bg-black/10' : ''}`}>
+              {Array.isArray(users) && users.length > 0 ? (
+                users.map((user, index) => (
+                  <tr key={user.id} className={`border-b border-white/10 ${index % 2 === 0 ? 'bg-black/10' : ''}`}>
                   <td className="py-4 px-6">
                     <div>
-                      <div className="text-white font-medium">{user.name}</div>
+                      <div className="text-white font-medium">{user.fullName}</div>
                       <div className="text-white/50 text-sm">{user.email}</div>
                     </div>
                   </td>
@@ -243,30 +224,16 @@ const AdminPage = () => {
                       {user.role}
                     </span>
                   </td>
-                  <td className="py-4 px-6">
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      user.isActive 
-                        ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
-                        : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                    }`}>
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-white">{user.bookmarkCount}</td>
                   <td className="py-4 px-6 text-white/70 text-sm">
-                    {new Date(user.lastLogin).toLocaleDateString()}
+                    {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleToggleStatus(user.id)}
-                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                          user.isActive
-                            ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30'
-                            : 'bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30'
-                        }`}
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="px-3 py-1 rounded-md text-xs font-medium transition-colors bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30"
                       >
-                        {user.isActive ? 'Deactivate' : 'Activate'}
+                        Delete
                       </button>
                       <button className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-md transition-colors">
                         <MoreHorizontal className="h-4 w-4" />
@@ -274,7 +241,14 @@ const AdminPage = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-4 px-6 text-center text-white/70">
+                    No users found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

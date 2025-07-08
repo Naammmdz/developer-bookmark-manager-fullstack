@@ -304,10 +304,15 @@ function App() {
   return (
     <BookmarkProvider>
       {/* Modals are rendered here, outside of Routes, so they can be displayed over any page */}
-      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={closeLoginModal} 
+        openRegisterModal={openRegisterModal}
+      />
       <RegisterModal
         isOpen={isRegisterModalOpen}
         onClose={closeRegisterModal}
+        openLoginModal={openLoginModal}
       />
       <SettingsModal
         isOpen={isSettingsModalOpen}
