@@ -8,6 +8,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  loginAsAdmin: () => void; // Temporary for testing
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,7 +20,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Kiểm tra token khi app khởi động
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const isDemoAdmin = localStorage.getItem('demo-admin');
+    
+    if (isDemoAdmin) {
+      // Load demo admin user
+      const adminUser: User = {
+        id: 1,
+        name: 'Admin User',
+        email: 'admin@demo.com',
+        role: 'admin',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        lastLogin: new Date().toISOString()
+      };
+      setUser(adminUser);
+      setIsLoading(false);
+    } else if (token) {
       authApi.fetchCurrentUser()
         .then(setUser)
         .catch(() => localStorage.removeItem('token'))
@@ -49,8 +65,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     authApi.logout().catch(console.error);
   };
 
+  // Temporary demo admin login for testing
+  const loginAsAdmin = () => {
+    const adminUser: User = {
+      id: 1,
+      name: 'Admin User',
+      email: 'admin@demo.com',
+      role: 'admin',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+      lastLogin: new Date().toISOString()
+    };
+    setUser(adminUser);
+    localStorage.setItem('demo-admin', 'true');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading, loginAsAdmin }}>
       {children}
     </AuthContext.Provider>
   );

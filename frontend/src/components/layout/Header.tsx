@@ -1,7 +1,7 @@
 import React from 'react';
 import { useBookmarks } from '../../context/BookmarkContext';
 import { useAuth } from '../../context/AuthContext';
-import { Bookmark, Grid, List, ListPlus, User, Search } from 'lucide-react'; // Added new icons
+import { Bookmark, ListPlus, User, Search } from 'lucide-react'; // Added new icons
 import { ShimmerButton } from '../ui/shimmer-button';
 
 interface HeaderProps {
@@ -12,7 +12,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ openLoginModal, openSettingsModal }) => {
   const { searchTerm, setSearchTerm, openModal } = useBookmarks();
-  const { currentUser } = useAuth();
+  const { user: currentUser, loginAsAdmin } = useAuth();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value); // setSearchTerm is from useBookmarks context
@@ -47,24 +47,23 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openSettingsModal }) =>
 
       {/* Action Buttons */}
       <div className="flex items-center gap-1">
+        {/* Temporary Admin Login Button */}
+        {!currentUser && (
+          <button
+            onClick={loginAsAdmin}
+            className="px-3 py-1.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium"
+            title="Login as Demo Admin"
+          >
+            Demo Admin
+          </button>
+        )}
+        
         <button
           onClick={() => openModal()}
           className="p-2 text-muted-foreground hover:text-foreground rounded transition-colors"
           title="Add Bookmark"
         >
           <ListPlus size={20} />
-        </button>
-        <button
-          className="p-2 text-muted-foreground hover:text-foreground rounded transition-colors"
-          title="Grid View"
-        >
-          <Grid size={20} />
-        </button>
-        <button
-          className="p-2 text-muted-foreground hover:text-foreground rounded transition-colors"
-          title="List View"
-        >
-          <List size={20} />
         </button>
 
         {/* Profile Icon Button */}

@@ -8,6 +8,8 @@ import {
 import { useAuth } from './context/AuthContext';
 
 import ProfilePage from './pages/ProfilePage';
+import LandingPage from './pages/LandingPage';
+import AdminPage from './pages/AdminPage';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import BookmarkGrid from './components/bookmark/BookmarkGrid';
@@ -30,6 +32,8 @@ import {
   ArrowUpDown,
   PlusCircle,
   ListPlus,
+  Grid,
+  List,
 } from 'lucide-react';
 
 
@@ -136,6 +140,8 @@ const BookmarksViewWithSidebar: React.FC = () => {
     openModal,
     reorderBookmarks, // Added for passing to BookmarkGrid
     deleteBookmarks, // Added for passing to BookmarkGrid
+    viewMode,
+    setViewMode,
   } = useBookmarks();
 
   const currentViewData = collectionData?.[activeCollection];
@@ -180,6 +186,28 @@ const BookmarksViewWithSidebar: React.FC = () => {
             </button>
             <button className="flex items-center gap-2 px-3 py-1.5 bg-black/20 hover:bg-black/30 border border-white/10 rounded-md text-sm text-white/90 transition-colors">
               <ArrowUpDown size={16} /> Sort
+            </button>
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-2 border border-white/10 rounded-md transition-colors ${
+                viewMode === 'grid' 
+                  ? 'bg-white/20 text-white' 
+                  : 'bg-black/20 hover:bg-black/30 text-white/90'
+              }`} 
+              title="Grid View"
+            >
+              <Grid size={16} />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 border border-white/10 rounded-md transition-colors ${
+                viewMode === 'list' 
+                  ? 'bg-white/20 text-white' 
+                  : 'bg-black/20 hover:bg-black/30 text-white/90'
+              }`} 
+              title="List View"
+            >
+              <List size={16} />
             </button>
           </div>
         </div>
@@ -238,6 +266,7 @@ const BookmarksViewWithSidebar: React.FC = () => {
             bookmarks={finalItemsToDisplay}
             reorderBookmarks={reorderBookmarks}
             deleteBookmarks={deleteBookmarks}
+            viewMode={viewMode}
           />
         )}
       </section>
@@ -252,7 +281,7 @@ const ProfileView: React.FC = () => (
 );
 
 function App() {
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -286,6 +315,9 @@ function App() {
       />
 
       <Routes>
+        {/* Landing page without sidebar/layout */}
+        <Route path="/landing" element={<LandingPage />} />
+        
         <Route
           element={
             <AppLayout
@@ -302,6 +334,10 @@ function App() {
             element={currentUser ? <ProfileView /> : <Navigate to="/" replace />}
           />
           {/* Add other routes that use AppLayout here */}
+          <Route
+            path="/admin"
+            element={currentUser?.role === 'admin' ? <AdminPage /> : <Navigate to="/" replace />}
+          />
         </Route>
         {/* Routes that don't use AppLayout can be defined outside/sibling to this Route */}
         <Route path="*" element={<Navigate to="/" replace />} />{' '}

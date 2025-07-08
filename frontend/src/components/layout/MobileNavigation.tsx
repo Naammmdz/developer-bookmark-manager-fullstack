@@ -12,7 +12,7 @@ interface MobileNavigationProps {
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({ openCollectionsModal, openSettingsModal }) => {
   const { activeCollection, setActiveCollection, openModal } = useBookmarks();
-  const { currentUser } = useAuth(); // Added for context, not used directly in this change
+  const { user: currentUser } = useAuth(); // Added for context, not used directly in this change
 
   // Adjusted navItems to include specific onClick handlers or identify them for conditional logic
   const navItems = [

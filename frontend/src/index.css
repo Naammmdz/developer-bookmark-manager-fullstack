@@ -24,6 +24,12 @@
     --input: 0 0% 15%;
     --ring: 0 0% 100%;
     --radius: 0.25rem;
+
+    /* Custom properties */
+    --navigation-height: 3.5rem;
+    --color-one: #ffbd7a;
+    --color-two: #fe8bbb;
+    --color-three: #9e7aff;
     
     /* Tag colors */
     --tag-blue: 210 100% 60%;

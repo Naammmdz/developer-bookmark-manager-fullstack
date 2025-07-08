@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 // No actual GlassCard component is imported, direct styling is applied.
 
 const ProfilePage: React.FC = () => {
-  const { currentUser, logout, loading } = useAuth();
+  const { user: currentUser, logout, isLoading: loading } = useAuth();
 
   if (loading && !currentUser) {
     // Show a loading indicator if auth state is still being determined
@@ -49,7 +49,7 @@ const ProfilePage: React.FC = () => {
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-medium text-white/50 uppercase tracking-wider mb-1">Display Name</label>
-            <p className="text-md sm:text-lg text-white/90">{currentUser.displayName || 'N/A'}</p>
+            <p className="text-md sm:text-lg text-white/90">{currentUser.name || 'N/A'}</p>
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-medium text-white/50 uppercase tracking-wider mb-1">User ID</label>

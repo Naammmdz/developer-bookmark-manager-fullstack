@@ -252,10 +252,11 @@ interface BookmarkGridProps {
   bookmarks: Bookmark[];
   reorderBookmarks: (movedBookmarkId: number, targetBookmarkId: number | null) => void; // Updated signature
   deleteBookmarks: (ids: number[]) => void;
+  viewMode: 'grid' | 'list'; // Added viewMode prop
   // activeCollection is not needed here anymore as parent handles empty state based on it
 }
 
-const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks, deleteBookmarks }) => {
+const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks, deleteBookmarks, viewMode }) => {
   const [previewBookmark, setPreviewBookmark] = useState<Bookmark | null>(null); // Typed state
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -327,7 +328,11 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
         <Droppable droppableId="bookmarkGrid" direction="vertical">
           {(provided) => (
             <div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full" // Consider responsive columns if needed
+              className={`w-full ${
+                viewMode === 'grid' 
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5' 
+                  : 'flex flex-col gap-3'
+              }`}
               ref={provided.innerRef}
               {...provided.droppableProps}
             >
@@ -350,6 +355,7 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
                         bulkMode={bulkMode}
                         checked={selectedIds.includes(bookmark.id)}
                         onCheck={() => toggleSelect(bookmark.id)}
+                        viewMode={viewMode}
                       />
                     </div>
                   )}

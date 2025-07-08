@@ -36,13 +36,3 @@ export interface AuthCredentials {
 export interface RegisterData extends AuthCredentials {
   name: string;
 }
-
-export interface User {
-  id: number;
-  email: string;
-  name: string;
-  role: 'user' | 'admin';
-  createdAt: string;
-  updatedAt: string;
-  lastLogin: string;
-}

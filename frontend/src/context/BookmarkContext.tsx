@@ -10,6 +10,9 @@ export interface CollectionWithItems extends Omit<Collection, 'id'> {
   items: Bookmark[];
 }
 
+// View mode type
+export type ViewMode = 'grid' | 'list';
+
 // Updated Context Type
 interface BookmarkContextType {
   bookmarks: Bookmark[]; // Still exposing raw bookmarks for potential direct use
@@ -19,6 +22,8 @@ interface BookmarkContextType {
   collectionData: { [key: string]: CollectionWithItems }; // Processed data for display
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  viewMode: ViewMode; // Added view mode
+  setViewMode: (mode: ViewMode) => void; // Added view mode setter
   isModalOpen: boolean;
   openModal: () => void;
   closeModal: () => void;
@@ -58,6 +63,7 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
   });
   const [activeCollection, setActiveCollection] = useState<string>('all'); // Initialized to 'all'
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [viewMode, setViewMode] = useState<ViewMode>('grid'); // Added view mode state
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isAddCollectionModalOpen, setIsAddCollectionModalOpen] = useState<boolean>(false);
 
@@ -231,6 +237,8 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
     collectionData, // New processed data
     searchTerm,
     setSearchTerm,
+    viewMode, // Added view mode
+    setViewMode, // Added view mode setter
     isModalOpen,
     openModal,
     closeModal,

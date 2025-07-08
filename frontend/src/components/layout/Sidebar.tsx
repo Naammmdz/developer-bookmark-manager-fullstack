@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
 import { useBookmarks, CollectionWithItems } from '../../context/BookmarkContext'; // Import CollectionWithItems
-import { PlusCircle, Trash2, MoreVertical } from 'lucide-react'; // Added for the "Add Collection" button
+import { useAuth } from '../../context/AuthContext';
+import { PlusCircle, Trash2, MoreVertical, Shield } from 'lucide-react'; // Added for the "Add Collection" button
 import { CustomIcon } from '../../utils/iconMapping';
 
 // Define SidebarItemProps and SidebarItem inline functional component
@@ -100,6 +102,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActi
 
 
 const Sidebar: React.FC = () => {
+  const { user } = useAuth();
+  const location = useLocation();
   const {
     activeCollection,
     setActiveCollection,
@@ -208,6 +212,26 @@ const Sidebar: React.FC = () => {
             />
           )}
         </div>
+        
+        {/* Admin Section */}
+        {user?.role === 'admin' && (
+          <div className="p-4 border-t border-white/10">
+            <div className="pt-1 pb-1">
+              <h2 className="text-xs text-white/40 font-semibold uppercase px-3 mb-1">Admin</h2>
+            </div>
+            <Link
+              to="/admin"
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ease-in-out ${
+                location.pathname === '/admin'
+                  ? 'bg-primary/20 text-primary font-medium border border-primary/30'
+                  : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+              }`}
+            >
+              <Shield size={20} className="w-5 h-5" />
+              <span className="flex-1 text-sm font-medium">User Management</span>
+            </Link>
+          </div>
+        )}
       </div>
     </motion.aside>
   );
