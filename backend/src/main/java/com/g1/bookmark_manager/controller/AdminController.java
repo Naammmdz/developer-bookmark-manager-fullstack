@@ -1,7 +1,9 @@
 package com.g1.bookmark_manager.controller;
 
+import com.g1.bookmark_manager.dto.response.UserDTO;
 import com.g1.bookmark_manager.entity.User;
 import com.g1.bookmark_manager.repository.UserRepository;
+import com.g1.bookmark_manager.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,17 +21,18 @@ import java.util.List;
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final AdminService adminService;
 
-    public AdminController(UserRepository userRepository) {
+    public AdminController(UserRepository userRepository, AdminService adminService) {
         this.userRepository = userRepository;
+        this.adminService = adminService;
     }
 
     @GetMapping("/users")
     @Operation(summary = "Get all users (Admin only)")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        return ResponseEntity.ok(adminService.getAllUsers());
     }
 
     @GetMapping("/dashboard")

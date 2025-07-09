@@ -34,4 +34,11 @@ public class AuthController {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/me")
+    @Operation(summary = "Get current user details")
+    public ResponseEntity<AuthResponse> getCurrentUser(@PathVariable String token) {
+        AuthResponse response = authService.getCurrentUser(token);
+        return ResponseEntity.ok(response);
+    }
 }

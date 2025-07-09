@@ -31,10 +31,11 @@ export const getUsers = async (): Promise<User[]> => {
       username: backendUser.username,
       email: backendUser.email,
       fullName: backendUser.fullName,
-      role: backendUser.roles?.some((role: any) => role.name === 'ADMIN') ? 'admin' as const : 'user' as const,
+      avatarUrl: backendUser.avatarUrl,
+      roles: backendUser.roles || [],
+      active: backendUser.active,
       createdAt: backendUser.createdAt,
-      updatedAt: backendUser.updatedAt,
-      lastLogin: backendUser.updatedAt // Use updatedAt as lastLogin if no specific field
+      updatedAt: backendUser.updatedAt
     }));
     
     console.log('Mapped users:', mappedUsers);
@@ -48,30 +49,33 @@ export const getUsers = async (): Promise<User[]> => {
         username: 'admin',
         email: 'admin@example.com',
         fullName: 'Admin User',
-        role: 'admin' as const,
+        avatarUrl: null,
+        roles: ['USER', 'ADMIN'],
+        active: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       },
       {
         id: 2,
         username: 'user1',
         email: 'user1@example.com',
         fullName: 'Test User 1',
-        role: 'user' as const,
+        avatarUrl: null,
+        roles: ['USER'],
+        active: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       },
       {
         id: 3,
         username: 'user2',
         email: 'user2@example.com',
         fullName: 'Test User 2',
-        role: 'user' as const,
+        avatarUrl: null,
+        roles: ['USER'],
+        active: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       }
     ];
   }

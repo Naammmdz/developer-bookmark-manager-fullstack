@@ -71,7 +71,16 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         try {
-
+            // Handle user input email
+            if (request.getUsername() == null || request.getPassword() == null) {
+                throw new InvalidDataException("Username and password must not be null");
+            }
+            // If the username is an email, we can still use it as the username
+            if (request.getUsername().contains("@")) {
+                User user = userRepository.findByEmail(request.getUsername())
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getUsername()));
+                request.setUsername(user.getUsername());
+            }
             UsernamePasswordAuthenticationToken a = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
             Authentication authentication = authenticationManager.authenticate(a);
      
@@ -79,12 +88,18 @@ public class AuthService {
             String token = jwtUtil.generateToken(user);
             return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getFullName());
         } catch (Exception e) {
-            throw new InvalidDataException("Invalid username or password");
+            throw new InvalidDataException("Invalid username/email or password");
         }
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+    }
+
+    public AuthResponse getCurrentUser(String token) {
+        String username = jwtUtil.getUsernameFromToken(token);
+        User user = findByUsername(username);
+        return new AuthResponse(jwtUtil.generateToken(user), user.getUsername(), user.getEmail(), user.getFullName());
     }
 }

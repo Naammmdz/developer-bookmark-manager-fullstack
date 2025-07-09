@@ -23,10 +23,11 @@ export interface User {
   email: string;
   username: string;
   fullName: string;
-  role: 'user' | 'admin';
+  avatarUrl: string | null;
+  roles: string[];
+  active: boolean;
   createdAt: string;
   updatedAt: string;
-  lastLogin: string;
 }
 
 export interface AuthCredentials {
