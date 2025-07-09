@@ -1,5 +1,5 @@
 import api from "./apiClient";
-import { User } from "../types";
+import { User, RegisterData } from "../types";
 
 export interface UserWithStats extends User {
   bookmarkCount: number;
@@ -78,6 +78,32 @@ export const getUsers = async (): Promise<User[]> => {
         updatedAt: new Date().toISOString()
       }
     ];
+  }
+};
+
+// Create new user (admin only) - uses register endpoint but doesn't return JWT
+export const createUser = async (userData: RegisterData): Promise<User> => {
+  try {
+    // Call the register endpoint
+    const { data } = await api.post('/auth/register', userData);
+    
+    // Map the response to User interface (excluding JWT token)
+    const newUser: User = {
+      id: data.id || 0, // Will be set by backend
+      username: userData.username,
+      email: userData.email,
+      fullName: userData.fullName,
+      avatarUrl: null,
+      roles: ['USER'], // Default role
+      active: true, // Default active status
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    return newUser;
+  } catch (error) {
+    console.error('Failed to create user:', error);
+    throw error;
   }
 };
 

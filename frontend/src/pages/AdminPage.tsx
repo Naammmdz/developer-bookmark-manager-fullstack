@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useRoleAccess } from '../hooks/useRoleAccess';
 import { Users, Shield, Activity, UserPlus, MoreHorizontal } from 'lucide-react';
 import { User } from '../types';
+import CreateUserModal from '../components/admin/CreateUserModal';
 
 const AdminPage = () => {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ const AdminPage = () => {
   const [dashboardMessage, setDashboardMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
 
   // Check if user is admin using JWT roles
   if (!isAdmin) {
@@ -70,6 +72,11 @@ const AdminPage = () => {
       console.error('Failed to delete user', error);
       setError('Failed to delete user.');
     }
+  };
+
+  const handleUserCreated = (newUser: User) => {
+    // Add new user to local state
+    setUsers(prevUsers => [...prevUsers, newUser]);
   };
 
   // Calculate stats from users data using useMemo
@@ -137,11 +144,22 @@ const AdminPage = () => {
     <div className="flex-1 flex flex-col min-h-screen">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-          <Shield className="h-8 w-8" />
-          User Management
-        </h1>
-        <p className="text-white/70">Manage users, roles, and permissions</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+              <Shield className="h-8 w-8" />
+              User Management
+            </h1>
+            <p className="text-white/70">Manage users, roles, and permissions</p>
+          </div>
+          <button
+            onClick={() => setIsCreateUserModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-black font-semibold rounded-lg transition-colors"
+          >
+            <UserPlus className="h-5 w-5" />
+            Create User
+          </button>
+        </div>
         {dashboardMessage && (
           <div className="mt-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
             <p className="text-green-300">{dashboardMessage}</p>
@@ -286,6 +304,13 @@ const AdminPage = () => {
           </table>
         </div>
       </div>
+
+      {/* Create User Modal */}
+      <CreateUserModal
+        isOpen={isCreateUserModalOpen}
+        onClose={() => setIsCreateUserModalOpen(false)}
+        onUserCreated={handleUserCreated}
+      />
     </div>
   );
 };
