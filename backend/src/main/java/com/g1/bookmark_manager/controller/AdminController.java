@@ -2,6 +2,7 @@ package com.g1.bookmark_manager.controller;
 
 import com.g1.bookmark_manager.dto.response.UserDTO;
 import com.g1.bookmark_manager.entity.User;
+import com.g1.bookmark_manager.exception.ResourceNotFoundException;
 import com.g1.bookmark_manager.repository.UserRepository;
 import com.g1.bookmark_manager.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,14 +43,16 @@ public class AdminController {
         return ResponseEntity.ok("Welcome to Admin Dashboard! You have ADMIN privileges.");
     }
 
+    // Handling user deactivation
     @DeleteMapping("/users/{id}")
     @Operation(summary = "Delete user (Admin only)")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return ResponseEntity.ok("User deleted successfully");
+    public ResponseEntity<String> deactivateUser(@PathVariable Long id) {
+        try {
+            adminService.softDeleteUser(id);
+            return ResponseEntity.ok("User deactivated successfully");
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 }

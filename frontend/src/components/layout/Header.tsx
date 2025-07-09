@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useBookmarks } from '../../context/BookmarkContext';
 import { useAuth } from '../../context/AuthContext';
 import { Bookmark, ListPlus, User, Search } from 'lucide-react'; // Added new icons
@@ -31,7 +32,13 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, open
   return (
     <div className="flex items-center justify-between h-14 px-4"> {/* Root div as specified */}
       {/* Title */}
-      <h1 className="text-lg font-semibold">Dev Bookmarks</h1>
+      <Link 
+        to="/landing" 
+        className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer"
+        title="Go to Landing Page"
+      >
+        Dev Bookmarks
+      </Link>
 
       {/* Search Bar */}
       <div className="flex-1 max-w-lg mx-6 relative"> {/* Adjusted for better spacing and icon */}

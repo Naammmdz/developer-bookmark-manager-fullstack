@@ -19,9 +19,9 @@ const CtaCard: React.FC<CtaCardProps> = ({ children, id, className }) => {
       ref={ref}
       id={id}
       className={cn(
-        'relative size-20 cursor-pointer overflow-hidden rounded-2xl border p-4 transition-opacity duration-1000',
+        'relative size-20 cursor-pointer overflow-hidden rounded-2xl p-4 transition-opacity duration-1000',
         // dark styles only
-          'transform-gpu bg-black/30 [border:1px_solid_rgba(255,255,255,.2)] [box-shadow:0_-30px_100px_-20px_#000000]',
+          'transform-gpu bg-black/50 [box-shadow:0_-30px_100px_-20px_#000000]',
         inView ? 'opacity-100' : 'opacity-0',
         className
       )}

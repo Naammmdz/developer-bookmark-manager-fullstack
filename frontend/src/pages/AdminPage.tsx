@@ -59,18 +59,18 @@ const AdminPage = () => {
     fetchData();
   }, []);
 
-  const handleDeleteUser = async (userId: number) => {
+  const handleToggleUserStatus = async (userId: number) => {
     try {
       const result = await deleteUser(userId);
       console.log(result); // Log the success message
       
-      // Remove user from local state
-      if (Array.isArray(users)) {
-        setUsers(users.filter(user => user.id !== userId));
-      }
+      // Toggle active status locally based on current status
+      setUsers(prevUsers => prevUsers.map(user => 
+        user.id === userId ? { ...user, active: !user.active } : user
+      ));
     } catch (error) {
-      console.error('Failed to delete user', error);
-      setError('Failed to delete user.');
+      console.error('Failed to toggle user status', error);
+      setError('Failed to toggle user status.');
     }
   };
 
@@ -281,10 +281,14 @@ const AdminPage = () => {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="px-3 py-1 rounded-md text-xs font-medium transition-colors bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30"
+                        onClick={() => handleToggleUserStatus(user.id)}
+                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                          user.active === true
+                            ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30'
+                            : 'bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30'
+                        }`}
                       >
-                        Delete
+                        {user.active === true ? 'Deactivate' : 'Activate'}
                       </button>
                       <button className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-md transition-colors">
                         <MoreHorizontal className="h-4 w-4" />

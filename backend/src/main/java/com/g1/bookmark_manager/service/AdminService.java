@@ -3,6 +3,7 @@ package com.g1.bookmark_manager.service;
 import com.g1.bookmark_manager.dto.response.UserDTO;
 import com.g1.bookmark_manager.entity.Role;
 import com.g1.bookmark_manager.entity.User;
+import com.g1.bookmark_manager.exception.ResourceNotFoundException;
 import com.g1.bookmark_manager.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,5 +41,27 @@ public class AdminService {
                         .map(role -> role.getName().name()) // Convert RoleName enum to String
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    // Handling user deactivation
+    /**
+     * Soft delete a user by setting isActive to false.
+     * This method is used by the admin to deactivate a user account.
+     *
+     * @param id the ID of the user to be deactivated
+     */
+    public void softDeleteUser(Long id) {
+        // Check if the user exists
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        // Handling user deactivation
+        // Ensure the user is not already inactive
+        if (!user.getIsActive()) {
+            user.setIsActive(true);
+            userRepository.save(user);
+        } else {
+            user.setIsActive(false);
+            userRepository.save(user);
+        }
     }
 }

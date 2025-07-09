@@ -5,9 +5,10 @@ interface RegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
   openLoginModal?: () => void;
+  onRegisterSuccess?: () => void;
 }
 
-const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, openLoginModal }) => {
+const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, openLoginModal, onRegisterSuccess }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
@@ -23,6 +24,9 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, openLogi
     try {
       await register(username, email, password, fullName);
       onClose(); // Close modal on successful registration
+      if (onRegisterSuccess) {
+        onRegisterSuccess(); // Call the redirect function
+      }
     } catch (err) {
       const errorMessage = (err instanceof Error) ? err.message : 'Failed to register. Please try again.';
       setError(errorMessage);

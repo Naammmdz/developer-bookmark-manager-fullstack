@@ -5,9 +5,10 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   openRegisterModal?: () => void;
+  onLoginSuccess?: () => void;
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, openRegisterModal }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, openRegisterModal, onLoginSuccess }) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, isLoading } = useAuth();
@@ -21,6 +22,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, openRegisterMo
     try {
       await login(usernameOrEmail, password);
       onClose(); // Close modal on successful login
+      if (onLoginSuccess) {
+        onLoginSuccess(); // Call the redirect function
+      }
     } catch (err) {
       const errorMessage = (err instanceof Error) ? err.message : 'Failed to login. Please check your credentials.';
       setError(errorMessage);

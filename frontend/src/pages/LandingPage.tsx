@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, BarChart, File, Globe, HeartHandshake, Rss, Shield, Bookmark, Code, Database, Terminal, Github, Folder } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import AnimatedShinyText from '../components/ui/AnimatedShinyText';
 import { TextAnimate } from '../components/ui/text-animate';
 import { Particles } from '../components/ui/particles';
@@ -9,6 +10,8 @@ import BorderBeam from '../components/ui/BorderBeam';
 import Marquee from '../components/ui/Marquee';
 import CtaCard from '../components/ui/CtaCard';
 import { useInView } from '../hooks/useInView';
+import LoginModal from '../components/auth/LoginModal';
+import RegisterModal from '../components/auth/RegisterModal';
 
 // Import hero images
 import heroDarkImg from '../imgs/hero-dark.png';
@@ -18,11 +21,25 @@ import PricingSection from '../components/landing/PricingSection';
 import LandingHeader from '../components/landing/LandingHeader';
 import Footer from '../components/landing/Footer';
 
-const HeroSection: React.FC = () => {
+interface HeroSectionProps {
+  onLoginClick: () => void;
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ onLoginClick }) => {
   const { ref, inView } = useInView({
     unobserveOnEnter: true,
     rootMargin: '-100px'
   });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGetStartedClick = () => {
+    if (user) {
+      navigate('/app');
+    } else {
+      onLoginClick();
+    }
+  };
 
   return (
     <section className="relative mx-auto mt-32 max-w-7xl px-6 text-center md:px-8">
@@ -68,13 +85,13 @@ const HeroSection: React.FC = () => {
         The ultimate bookmark manager for developers. Save, organize, and access your favorite coding resources with beautiful UI and powerful features. Built with React, TypeScript, and Tailwind CSS.
       </TextAnimate>
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <Link
-          to="/"
+        <button
+          onClick={handleGetStartedClick}
           className="-translate-y-4 animate-fade-in gap-2 rounded-lg bg-primary hover:bg-primary/90 py-3 px-6 text-primary-foreground font-medium opacity-0 ease-in-out transition-colors group flex items-center [--animation-delay:800ms]"
         >
           Get Started for free 
           <ArrowRight className="ml-1 transition-transform duration-300 ease-in-out group-hover:translate-x-1" size={16} />
-        </Link>
+        </button>
         <button
           className="-translate-y-4 animate-fade-in gap-2 rounded-lg border border-white/20 hover:bg-white/5 py-3 px-6 text-white font-medium opacity-0 ease-in-out transition-colors [--animation-delay:1000ms]"
         >
@@ -132,7 +149,21 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
-const CTASection: React.FC = () => {
+interface CTASectionProps {
+  onLoginClick: () => void;
+}
+
+const CTASection: React.FC<CTASectionProps> = ({ onLoginClick }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGetStartedClick = () => {
+    if (user) {
+      navigate('/app');
+    } else {
+      onLoginClick();
+    }
+  };
   const tiles = [
     {
       icon: Code,
@@ -173,7 +204,7 @@ const CTASection: React.FC = () => {
             <Marquee reverse className="-delay-[200ms] [--duration:10s]" repeat={5}>
               {randomTiles1.map(({ icon: Icon, bg }, id) => (
                 <CtaCard key={id}>
-                  <Icon className="size-full" />
+                  <Icon className="size-full text-white/40" />
                   <div className={bg} />
                 </CtaCard>
               ))}
@@ -181,7 +212,7 @@ const CTASection: React.FC = () => {
             <Marquee reverse className="[--duration:25s]" repeat={5}>
               {randomTiles2.map(({ icon: Icon, bg }, id) => (
                 <CtaCard key={id}>
-                  <Icon className="size-full" />
+                  <Icon className="size-full text-white/40" />
                   <div className={bg} />
                 </CtaCard>
               ))}
@@ -189,7 +220,7 @@ const CTASection: React.FC = () => {
             <Marquee reverse className="-delay-[200ms] [--duration:20s]" repeat={5}>
               {randomTiles1.map(({ icon: Icon, bg }, id) => (
                 <CtaCard key={id}>
-                  <Icon className="size-full" />
+                  <Icon className="size-full text-white/40" />
                   <div className={bg} />
                 </CtaCard>
               ))}
@@ -197,7 +228,7 @@ const CTASection: React.FC = () => {
             <Marquee reverse className="[--duration:30s]" repeat={5}>
               {randomTiles2.map(({ icon: Icon, bg }, id) => (
                 <CtaCard key={id}>
-                  <Icon className="size-full" />
+                  <Icon className="size-full text-white/40" />
                   <div className={bg} />
                 </CtaCard>
               ))}
@@ -205,7 +236,7 @@ const CTASection: React.FC = () => {
             <Marquee reverse className="-delay-[200ms] [--duration:20s]" repeat={5}>
               {randomTiles3.map(({ icon: Icon, bg }, id) => (
                 <CtaCard key={id}>
-                  <Icon className="size-full" />
+                  <Icon className="size-full text-white/40" />
                   <div className={bg} />
                 </CtaCard>
               ))}
@@ -213,7 +244,7 @@ const CTASection: React.FC = () => {
             <Marquee reverse className="[--duration:30s]" repeat={5}>
               {randomTiles4.map(({ icon: Icon, bg }, id) => (
                 <CtaCard key={id}>
-                  <Icon className="size-full" />
+                  <Icon className="size-full text-white/40" />
                   <div className={bg} />
                 </CtaCard>
               ))}
@@ -225,13 +256,13 @@ const CTASection: React.FC = () => {
               <div className="z-10 mt-4 flex flex-col items-center text-center text-primary">
                 <h1 className="text-3xl font-bold lg:text-4xl">Stop losing your dev resources.</h1>
                 <p className="mt-2">Organize all your coding bookmarks in one place. Start free today.</p>
-                <Link
-                  to="/"
+                <button
+                  onClick={handleGetStartedClick}
                   className="group mt-4 rounded-[2rem] px-6 inline-flex items-center gap-2 rounded-lg bg-primary hover:bg-primary/90 py-3 text-primary-foreground font-medium transition-colors"
                 >
                   Get Started
                   <ArrowRight className="ml-1 size-4 transition-all duration-300 ease-out group-hover:translate-x-1" />
-                </Link>
+                </button>
               </div>
               <div className="bg-background absolute inset-0 -z-10 rounded-full opacity-40 blur-xl dark:bg-background" />
             </div>
@@ -244,14 +275,54 @@ const CTASection: React.FC = () => {
 };
 
 const LandingPage: React.FC = () => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLoginClick = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  const handleLoginSuccess = () => {
+    setIsLoginModalOpen(false);
+    navigate('/app');
+  };
+
+  const handleRegisterSuccess = () => {
+    setIsRegisterModalOpen(false);
+    navigate('/app');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <LandingHeader />
-      <HeroSection />
+      <HeroSection onLoginClick={handleLoginClick} />
       <ClientSection />
       <PricingSection />
-      <CTASection />
+      <CTASection onLoginClick={handleLoginClick} />
       <Footer />
+      
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        openRegisterModal={() => {
+          setIsLoginModalOpen(false);
+          setIsRegisterModalOpen(true);
+        }}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      {/* Register Modal */}
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        openLoginModal={() => {
+          setIsRegisterModalOpen(false);
+          setIsLoginModalOpen(true);
+        }}
+        onRegisterSuccess={handleRegisterSuccess}
+      />
     </div>
   );
 };

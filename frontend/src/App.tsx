@@ -19,6 +19,8 @@ import AddBookmarkModal from './components/bookmark/AddBookmarkModal';
 import AddCollectionModal from './components/collection/AddCollectionModal'; // Import AddCollectionModal
 import LoginModal from './components/auth/LoginModal';
 import RegisterModal from './components/auth/RegisterModal';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import RootRoute from './components/auth/RootRoute';
 import SettingsModal from './components/settings/SettingsModal';
 import BackgroundAnimation from './components/layout/BackgroundAnimation';
 import KeyboardShortcutsButton from './components/ui/KeyboardShortcutsButton';
@@ -320,33 +322,40 @@ function App() {
       />
 
       <Routes>
+        {/* Root route - redirects based on authentication */}
+        <Route path="/" element={<RootRoute />} />
+        
         {/* Landing page without sidebar/layout */}
         <Route path="/landing" element={<LandingPage />} />
         
+        {/* Protected app routes */}
         <Route
+          path="/app"
           element={
-            <AppLayout
-              openLoginModal={openLoginModal}
-              openRegisterModal={openRegisterModal}
-              openSettingsModal={openSettingsModal}
-              openCollectionsModal={openCollectionsModal}
-            />
+            <ProtectedRoute>
+              <AppLayout
+                openLoginModal={openLoginModal}
+                openRegisterModal={openRegisterModal}
+                openSettingsModal={openSettingsModal}
+                openCollectionsModal={openCollectionsModal}
+              />
+            </ProtectedRoute>
           }
         >
-          <Route path="/" element={<BookmarksViewWithSidebar />} />
+          <Route index element={<BookmarksViewWithSidebar />} />
           <Route
-            path="/profile"
-            element={currentUser ? <ProfileView /> : <Navigate to="/" replace />}
+            path="profile"
+            element={<ProfileView />}
           />
           {/* Add other routes that use AppLayout here */}
           <Route
-            path="/admin"
-            element={currentUser?.role === 'admin' ? <AdminPage /> : <Navigate to="/" replace />}
+            path="admin"
+            element={currentUser?.role === 'admin' ? <AdminPage /> : <Navigate to="/app" replace />}
           />
         </Route>
-        {/* Routes that don't use AppLayout can be defined outside/sibling to this Route */}
-        <Route path="*" element={<Navigate to="/" replace />} />{' '}
+        
         {/* Fallback for unmatched routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {/* KeyboardShortcutsButton removed from here, now in AppLayout */}
     </BookmarkProvider>
