@@ -220,9 +220,9 @@ const Sidebar: React.FC = () => {
               <h2 className="text-xs text-white/40 font-semibold uppercase px-3 mb-1">Admin</h2>
             </div>
             <Link
-              to="/admin"
+              to="/app/admin"
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ease-in-out ${
-                location.pathname === '/admin'
+                location.pathname.startsWith('/app/admin')
                   ? 'bg-primary/20 text-primary font-medium border border-primary/30'
                   : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
               }`}

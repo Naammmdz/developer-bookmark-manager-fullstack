@@ -21,6 +21,7 @@ import LoginModal from './components/auth/LoginModal';
 import RegisterModal from './components/auth/RegisterModal';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import RootRoute from './components/auth/RootRoute';
+import AdminLayout from './components/admin/AdminLayout';
 import SettingsModal from './components/settings/SettingsModal';
 import BackgroundAnimation from './components/layout/BackgroundAnimation';
 import KeyboardShortcutsButton from './components/ui/KeyboardShortcutsButton';
@@ -348,10 +349,33 @@ function App() {
             element={<ProfileView />}
           />
           {/* Add other routes that use AppLayout here */}
-          <Route
-            path="admin"
-            element={currentUser?.role === 'admin' ? <AdminPage /> : <Navigate to="/app" replace />}
-          />
+        </Route>
+        
+        {/* Admin routes with AdminLayout */}
+        <Route
+          path="/app/admin"
+          element={
+            <ProtectedRoute>
+              {currentUser?.role === 'admin' ? (
+                <AdminLayout
+                  openLoginModal={openLoginModal}
+                  openRegisterModal={openRegisterModal}
+                  openSettingsModal={openSettingsModal}
+                  openCollectionsModal={openCollectionsModal}
+                />
+              ) : (
+                <Navigate to="/app" replace />
+              )}
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminPage />} />
+          <Route path="users" element={<AdminPage />} />
+          <Route path="roles" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Roles & Permissions</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Analytics</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="system" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Status</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="logs" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Logs</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Admin Settings</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
         </Route>
         
         {/* Fallback for unmatched routes */}
