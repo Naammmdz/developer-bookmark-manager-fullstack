@@ -78,6 +78,7 @@ public class SecurityConfig {
 
                         // User endpoints (both USER and ADMIN can access)
                         .requestMatchers("/api/bookmarks/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/collections/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
 
                         // All other requests need authentication

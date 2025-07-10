@@ -253,10 +253,11 @@ interface BookmarkGridProps {
   reorderBookmarks: (movedBookmarkId: number, targetBookmarkId: number | null) => void; // Updated signature
   deleteBookmarks: (ids: number[]) => void;
   viewMode: 'grid' | 'list'; // Added viewMode prop
+  onBookmarkClick?: (bookmark: Bookmark) => void; // Added onBookmarkClick prop
   // activeCollection is not needed here anymore as parent handles empty state based on it
 }
 
-const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks, deleteBookmarks, viewMode }) => {
+const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks, deleteBookmarks, viewMode, onBookmarkClick }) => {
   const [previewBookmark, setPreviewBookmark] = useState<Bookmark | null>(null); // Typed state
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -356,6 +357,7 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
                         checked={selectedIds.includes(bookmark.id)}
                         onCheck={() => toggleSelect(bookmark.id)}
                         viewMode={viewMode}
+                        onBookmarkClick={onBookmarkClick}
                       />
                     </div>
                   )}

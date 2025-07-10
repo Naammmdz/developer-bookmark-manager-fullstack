@@ -36,14 +36,14 @@ const modal = {
 };
 
 const AddBookmarkModal: React.FC = () => {
-  const { isModalOpen, closeModal, addBookmark } = useBookmarks();
+  const { isModalOpen, closeModal, addBookmark, collections } = useBookmarks();
   
   const [formData, setFormData] = useState({
     title: '',
     url: '',
     description: '',
     tags: [''],
-    collection: 'Frontend Resources',
+    collection: collections.length > 0 ? collections[0].name : '',
     isPublic: true,
     isFavorite: false,
     favicon: ''
@@ -97,7 +97,7 @@ const AddBookmarkModal: React.FC = () => {
       url: '',
       description: '',
       tags: [''],
-      collection: 'Frontend Resources',
+      collection: collections.length > 0 ? collections[0].name : '',
       isPublic: true,
       isFavorite: false,
       favicon: ''
@@ -229,10 +229,15 @@ const AddBookmarkModal: React.FC = () => {
                       onChange={handleChange}
                       className="w-full p-3 rounded-lg bg-white/5 border border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white/90 outline-none transition-all"
                     >
-                      <option value="Frontend Resources">Frontend Resources</option>
-                      <option value="Backend Resources">Backend Resources</option>
-                      <option value="CSS Resources">CSS Resources</option>
-                      <option value="Documentation">Documentation</option>
+                      {collections.length > 0 ? (
+                        collections.map((collection) => (
+                          <option key={collection.id} value={collection.name}>
+                            {collection.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">No collections available</option>
+                      )}
                     </select>
                   </div>
                   

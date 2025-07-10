@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookmarks")
@@ -66,6 +67,14 @@ public class BookmarkController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}")
+    @Operation(summary = "Partially update a bookmark")
+    public ResponseEntity<BookmarkResponse> patchBookmark(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        String username = getCurrentUsername();
+        BookmarkResponse bookmark = bookmarkService.patchBookmark(id, updates, username);
+        return ResponseEntity.ok(bookmark);
+    }
+
     @GetMapping("/favorites")
     @Operation(summary = "Get favorite bookmarks")
     public ResponseEntity<List<BookmarkResponse>> getFavoriteBookmarks() {
@@ -74,11 +83,34 @@ public class BookmarkController {
         return ResponseEntity.ok(bookmarks);
     }
 
-    @GetMapping("/category/{category}")
-    @Operation(summary = "Get bookmarks by category")
-    public ResponseEntity<List<BookmarkResponse>> getBookmarksByCategory(@PathVariable String category) {
+    @GetMapping("/collection/{collection}")
+    @Operation(summary = "Get bookmarks by collection")
+    public ResponseEntity<List<BookmarkResponse>> getBookmarksByCollection(@PathVariable String collection) {
         String username = getCurrentUsername();
-        List<BookmarkResponse> bookmarks = bookmarkService.getBookmarksByCategory(category, username);
+        List<BookmarkResponse> bookmarks = bookmarkService.getBookmarksByCollection(collection, username);
+        return ResponseEntity.ok(bookmarks);
+    }
+
+    @GetMapping("/public")
+    @Operation(summary = "Get public bookmarks for the current user")
+    public ResponseEntity<List<BookmarkResponse>> getPublicBookmarks() {
+        String username = getCurrentUsername();
+        List<BookmarkResponse> bookmarks = bookmarkService.getPublicBookmarks(username);
+        return ResponseEntity.ok(bookmarks);
+    }
+
+    @GetMapping("/public/all")
+    @Operation(summary = "Get all public bookmarks")
+    public ResponseEntity<List<BookmarkResponse>> getAllPublicBookmarks() {
+        List<BookmarkResponse> bookmarks = bookmarkService.getAllPublicBookmarks();
+        return ResponseEntity.ok(bookmarks);
+    }
+
+    @GetMapping("/tag/{tag}")
+    @Operation(summary = "Get bookmarks by tag")
+    public ResponseEntity<List<BookmarkResponse>> getBookmarksByTag(@PathVariable String tag) {
+        String username = getCurrentUsername();
+        List<BookmarkResponse> bookmarks = bookmarkService.getBookmarksByTag(tag, username);
         return ResponseEntity.ok(bookmarks);
     }
 
@@ -90,12 +122,12 @@ public class BookmarkController {
         return ResponseEntity.ok(bookmarks);
     }
 
-    @GetMapping("/categories")
-    @Operation(summary = "Get all categories for the current user")
-    public ResponseEntity<List<String>> getCategories() {
+    @GetMapping("/collections")
+    @Operation(summary = "Get all collections for the current user")
+    public ResponseEntity<List<String>> getCollections() {
         String username = getCurrentUsername();
-        List<String> categories = bookmarkService.getCategories(username);
-        return ResponseEntity.ok(categories);
+        List<String> collections = bookmarkService.getCollections(username);
+        return ResponseEntity.ok(collections);
     }
 
     private String getCurrentUsername() {

@@ -11,6 +11,7 @@ import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
 import AdminPage from './pages/AdminPage';
 import Header from './components/layout/Header';
+import { useRecentlyAccessed } from './hooks/useRecentlyAccessed';
 import Sidebar from './components/layout/Sidebar';
 import BookmarkGrid from './components/bookmark/BookmarkGrid';
 // CollectionHeader removed as it's no longer used in BookmarksViewWithSidebar
@@ -147,6 +148,10 @@ const BookmarksViewWithSidebar: React.FC = () => {
     setViewMode,
   } = useBookmarks();
 
+  const { recentlyAccessed, addRecentlyAccessed } = useRecentlyAccessed();
+  
+  // Get recent bookmarks for the "Recently Accessed" section
+  const displayRecentBookmarks = recentlyAccessed.slice(0, 5);
   const currentViewData = collectionData?.[activeCollection];
   const icon = currentViewData?.icon || 'folder';
   const name = currentViewData?.name || 'Loading...';
@@ -217,28 +222,25 @@ const BookmarksViewWithSidebar: React.FC = () => {
       </section>
 
       {/* Recently Accessed Section (Wrapped) */}
-      <section className="px-6 mb-8">
-        <div className="rounded-2xl bg-black/20 backdrop-blur-lg border border-white/10 px-6 py-4 flex items-center gap-3 overflow-x-auto">
-          <div className="text-white/80 font-medium mr-2">
-            Recently Accessed
+      {displayRecentBookmarks.length > 0 && (
+        <section className="px-6 mb-8">
+          <div className="rounded-2xl bg-black/20 backdrop-blur-lg border border-white/10 px-6 py-4 flex items-center gap-3 overflow-x-auto">
+            <div className="text-white/80 font-medium mr-2">
+              Recently Accessed
+            </div>
+            {displayRecentBookmarks.map((bookmark) => (
+              <span 
+                key={bookmark.id} 
+                className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm whitespace-nowrap cursor-pointer hover:bg-white/20 transition-colors"
+                onClick={() => window.open(bookmark.url, '_blank')}
+                title={bookmark.url}
+              >
+                {bookmark.title}
+              </span>
+            ))}
           </div>
-          <span className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm">
-            React Documentation
-          </span>
-          <span className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm">
-            Node.js Best Practices
-          </span>
-          <span className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm">
-            Tailwind CSS Docs
-          </span>
-          <span className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm">
-            TypeScript Handbook
-          </span>
-          <span className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm">
-            Express.js Guide
-          </span>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Bookmark Grid Section (Wrapped) */}
       <section className="px-6 pb-6 flex-1 flex flex-col">
@@ -270,6 +272,7 @@ const BookmarksViewWithSidebar: React.FC = () => {
             reorderBookmarks={reorderBookmarks}
             deleteBookmarks={deleteBookmarks}
             viewMode={viewMode}
+            onBookmarkClick={addRecentlyAccessed}
           />
         )}
       </section>

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,9 +15,11 @@ public class BookmarkResponse {
     private String title;
     private String url;
     private String description;
-    private String category;
-    private String tags;
+    private String collection;
+    private List<String> tags;
     private Boolean isFavorite;
+    private Boolean isPublic;
+    private String favicon;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String username;

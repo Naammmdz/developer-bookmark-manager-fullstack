@@ -1,7 +1,9 @@
-import { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { sampleBookmarks, sampleCollections } from '../data/sampleData';
 import { Bookmark, Collection } from '../types';
+import { getCollections, addCollection as apiAddCollection, deleteCollection as apiDeleteCollection } from '../api/collectionApi';
+import { getBookmarks, addBookmark as apiAddBookmark, deleteBookmark as apiDeleteBookmark, updateBookmark as apiUpdateBookmark } from '../api/bookmarkApi';
 
 // New type for collection with its items
 export interface CollectionWithItems extends Omit<Collection, 'id'> {
@@ -55,48 +57,102 @@ interface BookmarkProviderProps {
 
 export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
   const { user } = useAuth();
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>(sampleBookmarks);
-  // Filter out special collection names during initial state setting and allow updates
-  const [staticCollections, setStaticCollections] = useState<Collection[]>(() => {
-    const excludedNames = ['All Bookmarks', 'Favorites', 'Recently Added'];
-    return sampleCollections.filter(col => !excludedNames.includes(col.name));
-  });
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  // Initialize with empty array, will be populated from backend
+  const [staticCollections, setStaticCollections] = useState<Collection[]>([]);
   const [activeCollection, setActiveCollection] = useState<string>('all'); // Initialized to 'all'
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [viewMode, setViewMode] = useState<ViewMode>('grid'); // Added view mode state
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isAddCollectionModalOpen, setIsAddCollectionModalOpen] = useState<boolean>(false);
 
-  const toggleFavorite = (id: number) => {
-    setBookmarks(
-      bookmarks.map((bookmark) =>
-        bookmark.id === id
-          ? { ...bookmark, isFavorite: !bookmark.isFavorite }
-          : bookmark
-      )
-    );
-  };
-
-  const addBookmark = (bookmark: Omit<Bookmark, 'id' | 'createdAt'>) => {
+  useEffect(() => {
     if (user) {
-      console.log(`Adding bookmark for user: ${user.email}`);
+      // Fetch both bookmarks and collections from the backend for current user
+      Promise.all([
+        getBookmarks(),
+        getCollections()
+      ])
+        .then(([bookmarksData, collectionsData]) => {
+          setBookmarks(bookmarksData);
+          setStaticCollections(collectionsData);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch data: ", error);
+          // Fallback to sample data if API fails
+          setBookmarks(sampleBookmarks);
+          const excludedNames = ['All Bookmarks', 'Favorites', 'Recently Added'];
+          setStaticCollections(sampleCollections.filter(col => !excludedNames.includes(col.name)));
+        });
     } else {
-      console.log('Adding bookmark for guest user (no user logged in).');
+      // Clear data when user logs out
+      setBookmarks([]);
+      setStaticCollections([]);
     }
-    const newBookmark: Bookmark = {
-      ...bookmark,
-      id: Math.max(...bookmarks.map(b => b.id), 0) + 1,
-      createdAt: new Date().toISOString()
-    };
-    setBookmarks([newBookmark, ...bookmarks]);
+  }, [user]);
+
+  const toggleFavorite = async (id: number) => {
+    try {
+      const bookmark = bookmarks.find(bm => bm.id === id);
+      if (!bookmark) return;
+
+      const updatedBookmark = await apiUpdateBookmark(id, { isFavorite: !bookmark.isFavorite });
+
+      setBookmarks(
+        bookmarks.map((bm) =>
+          bm.id === id
+            ? updatedBookmark
+            : bm
+        )
+      );
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+      // You could add error handling here (e.g., show a toast)
+    }
   };
 
-  const deleteBookmark = (id: number) => {
-    setBookmarks(bookmarks.filter((bookmark) => bookmark.id !== id));
+  const addBookmark = async (bookmark: Omit<Bookmark, 'id' | 'createdAt'>) => {
+    try {
+      if (user) {
+        console.log(`Adding bookmark for user: ${user.email}`);
+        // Call backend API to add bookmark
+        const newBookmark = await apiAddBookmark(bookmark);
+        setBookmarks(prevBookmarks => [newBookmark, ...prevBookmarks]);
+      } else {
+        console.log('Adding bookmark for guest user (no user logged in).');
+        // Fallback for guest users (should not happen in normal flow)
+        const newBookmark: Bookmark = {
+          ...bookmark,
+          id: Math.max(...bookmarks.map(b => b.id), 0) + 1,
+          createdAt: new Date().toISOString()
+        };
+        setBookmarks([newBookmark, ...bookmarks]);
+      }
+    } catch (error) {
+      console.error("Failed to add bookmark:", error);
+      // You could add error handling here (e.g., show a toast)
+    }
   };
 
-  const deleteBookmarks = (ids: number[]) => {
-    setBookmarks(bookmarks.filter((bookmark) => !ids.includes(bookmark.id)));
+  const deleteBookmark = async (id: number) => {
+    try {
+      await apiDeleteBookmark(id);
+      setBookmarks(bookmarks.filter((bookmark) => bookmark.id !== id));
+    } catch (error) {
+      console.error("Failed to delete bookmark:", error);
+      // You could add error handling here (e.g., show a toast)
+    }
+  };
+
+  const deleteBookmarks = async (ids: number[]) => {
+    try {
+      // Delete all bookmarks in parallel
+      await Promise.all(ids.map(id => apiDeleteBookmark(id)));
+      setBookmarks(bookmarks.filter((bookmark) => !ids.includes(bookmark.id)));
+    } catch (error) {
+      console.error("Failed to delete bookmarks:", error);
+      // You could add error handling here (e.g., show a toast)
+    }
   };
 
   const openModal = () => setIsModalOpen(true);
@@ -105,41 +161,53 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
   const openAddCollectionModal = () => setIsAddCollectionModalOpen(true);
   const closeAddCollectionModal = () => setIsAddCollectionModalOpen(false);
 
-  const addCollection = (name: string, icon: string) => {
-    const newId = Date.now();
-    const newCollection: Collection = { id: newId, name, icon, count: 0 };
-    setStaticCollections(prevCollections => [...prevCollections, newCollection]);
+  const addCollection = async (name: string, icon: string) => {
+    try {
+      const newCollection = await apiAddCollection({ name, icon });
+      setStaticCollections(prevCollections => [...prevCollections, newCollection]);
+    } catch (error) {
+      console.error("Failed to add collection:", error);
+      // You could add error handling here (e.g., show a toast)
+    }
   };
 
-  const deleteCollection = (collectionId: string) => {
-    // Convert string ID to number for comparison
-    const numericId = parseInt(collectionId);
-    
-    // Find the collection to be deleted
-    const collectionToDelete = staticCollections.find(col => col.id === numericId);
-    
-    if (!collectionToDelete) {
-      console.warn(`Collection with ID ${collectionId} not found`);
-      return;
-    }
-    
-    // Remove the collection from staticCollections
-    setStaticCollections(prevCollections => 
-      prevCollections.filter(col => col.id !== numericId)
-    );
-    
-    // Move bookmarks from deleted collection to "All Bookmarks" and update their collection name
-    setBookmarks(prevBookmarks => 
-      prevBookmarks.map(bookmark => 
-        bookmark.collection === collectionToDelete.name
-          ? { ...bookmark, collection: 'Uncategorized' } // Move to a default collection
-          : bookmark
-      )
-    );
-    
-    // If the deleted collection was active, switch to 'all'
-    if (activeCollection === collectionId) {
-      setActiveCollection('all');
+  const deleteCollection = async (collectionId: string) => {
+    try {
+      // Convert string ID to number for API call
+      const numericId = parseInt(collectionId);
+      
+      // Find the collection to be deleted
+      const collectionToDelete = staticCollections.find(col => col.id === numericId);
+      
+      if (!collectionToDelete) {
+        console.warn(`Collection with ID ${collectionId} not found`);
+        return;
+      }
+      
+      // Call backend API to delete collection
+      await apiDeleteCollection(numericId);
+      
+      // Remove the collection from staticCollections
+      setStaticCollections(prevCollections => 
+        prevCollections.filter(col => col.id !== numericId)
+      );
+      
+      // Move bookmarks from deleted collection to "All Bookmarks" and update their collection name
+      setBookmarks(prevBookmarks => 
+        prevBookmarks.map(bookmark => 
+          bookmark.collection === collectionToDelete.name
+            ? { ...bookmark, collection: 'Uncategorized' } // Move to a default collection
+            : bookmark
+        )
+      );
+      
+      // If the deleted collection was active, switch to 'all'
+      if (activeCollection === collectionId) {
+        setActiveCollection('all');
+      }
+    } catch (error) {
+      console.error("Failed to delete collection:", error);
+      // You could add error handling here (e.g., show a toast)
     }
   };
 

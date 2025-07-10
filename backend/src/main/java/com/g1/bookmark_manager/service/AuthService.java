@@ -3,11 +3,13 @@ package com.g1.bookmark_manager.service;
 import com.g1.bookmark_manager.dto.request.LoginRequest;
 import com.g1.bookmark_manager.dto.request.RegisterRequest;
 import com.g1.bookmark_manager.dto.response.AuthResponse;
+import com.g1.bookmark_manager.entity.Collection;
 import com.g1.bookmark_manager.entity.Role;
 import com.g1.bookmark_manager.entity.User;
 import com.g1.bookmark_manager.exception.DuplicateResourceException;
 import com.g1.bookmark_manager.exception.InvalidDataException;
 import com.g1.bookmark_manager.exception.ResourceNotFoundException;
+import com.g1.bookmark_manager.repository.CollectionRepository;
 import com.g1.bookmark_manager.repository.RoleRepository;
 import com.g1.bookmark_manager.repository.UserRepository;
 import com.g1.bookmark_manager.util.JwtUtil;
@@ -25,17 +27,20 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final CollectionRepository collectionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
     public AuthService(UserRepository userRepository,
                       RoleRepository roleRepository,
+                      CollectionRepository collectionRepository,
                       PasswordEncoder passwordEncoder, 
                       JwtUtil jwtUtil, 
                       AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.collectionRepository = collectionRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
@@ -64,6 +69,9 @@ public class AuthService {
         user.setRoles(List.of(userRole));
 
         userRepository.save(user);
+        
+        // Create default collections for new user
+        createDefaultCollections(user);
 
         String token = jwtUtil.generateToken(user);
         return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getFullName());
@@ -101,5 +109,29 @@ public class AuthService {
         String username = jwtUtil.getUsernameFromToken(token);
         User user = findByUsername(username);
         return new AuthResponse(jwtUtil.generateToken(user), user.getUsername(), user.getEmail(), user.getFullName());
+    }
+    
+    private void createDefaultCollections(User user) {
+        // Create 4 default collections based on frontend expectations
+        String[][] defaultCollections = {
+            {"Frontend Resources", "Layers", "Resources for frontend development"},
+            {"Backend Resources", "Server", "Resources for backend development"},
+            {"CSS Resources", "Palette", "Stylesheets and design resources"},
+            {"Documentation", "FileText", "Documentation and reference materials"}
+        };
+        
+        for (int i = 0; i < defaultCollections.length; i++) {
+            String[] collectionData = defaultCollections[i];
+            Collection collection = new Collection();
+            collection.setName(collectionData[0]);
+            collection.setIcon(collectionData[1]);
+            collection.setDescription(collectionData[2]);
+            collection.setIsPublic(true);
+            collection.setIsDefault(true);
+            collection.setSortOrder(i + 1);
+            collection.setUser(user);
+            
+            collectionRepository.save(collection);
+        }
     }
 }

@@ -14,6 +14,7 @@ interface BookmarkCardProps {
   checked?: boolean;
   onCheck?: () => void;
   viewMode?: 'grid' | 'list';
+  onBookmarkClick?: (bookmark: Bookmark) => void;
 }
 
 // Memoize the card to prevent unnecessary re-renders
@@ -24,7 +25,8 @@ const OptimizedBookmarkCard: React.FC<BookmarkCardProps> = memo(({
   bulkMode, 
   checked, 
   onCheck,
-  viewMode = 'grid'
+  viewMode = 'grid',
+  onBookmarkClick
 }) => {
   const { toggleFavorite, deleteBookmark } = useBookmarks();
   
@@ -58,6 +60,14 @@ const OptimizedBookmarkCard: React.FC<BookmarkCardProps> = memo(({
     e.stopPropagation();
     onPreview();
   }, [onPreview]);
+
+  const handleBookmarkClick = useCallback((e: React.MouseEvent) => {
+    // Don't prevent default - let the link open normally
+    // But track the click for recently accessed
+    if (onBookmarkClick) {
+      onBookmarkClick(bookmark);
+    }
+  }, [bookmark, onBookmarkClick]);
 
   // Use CSS transforms instead of framer-motion for hover
   return (
@@ -138,7 +148,7 @@ const OptimizedBookmarkCard: React.FC<BookmarkCardProps> = memo(({
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary/80 text-sm flex items-center gap-1 mb-2 hover:text-primary transition-colors line-clamp-1"
-              onClick={e => e.stopPropagation()}
+              onClick={handleBookmarkClick}
             >
               {displayUrl}
               <ExternalLink size={12} />
@@ -218,7 +228,7 @@ const OptimizedBookmarkCard: React.FC<BookmarkCardProps> = memo(({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary/80 text-sm flex items-center gap-1 mb-2 hover:text-primary transition-colors truncate"
-                onClick={e => e.stopPropagation()}
+                onClick={handleBookmarkClick}
               >
                 {displayUrl}
                 <ExternalLink size={12} className="flex-shrink-0" />

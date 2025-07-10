@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class BookmarkRequest {
     @NotBlank(message = "Title is required")
@@ -16,9 +18,13 @@ public class BookmarkRequest {
     @Size(max = 1000, message = "Description must not exceed 1000 characters")
     private String description;
     
-    private String category;
+    private String collection;
     
-    private String tags;
+    private List<String> tags;
     
     private Boolean isFavorite = false;
+
+    private Boolean isPublic = true;
+
+    private String favicon;
 }
