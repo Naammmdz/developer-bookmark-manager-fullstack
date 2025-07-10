@@ -12,7 +12,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -51,7 +50,7 @@ public class Bookmark {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "collection_id")
-    private Collection collection;
+    private com.g1.bookmark_manager.entity.Collection collection;
 
     @Column(name = "is_public", nullable = false)
     private Boolean isPublic = false;
@@ -87,7 +86,7 @@ public class Bookmark {
 
     // Constructor for creating new bookmarks
     public Bookmark(String title, String url, String description, List<String> tags,
-                    Collection collection, Boolean isPublic, String favicon, User user) {
+                    com.g1.bookmark_manager.entity.Collection collection, Boolean isPublic, String favicon, User user) {
         this.title = title;
         this.url = url;
         this.description = description;
