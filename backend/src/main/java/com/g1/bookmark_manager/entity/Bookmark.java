@@ -100,7 +100,7 @@ public class Bookmark {
         this.clickCount = 0;
     }
 
-    // Helper methods
+    // Helper methods.
     public void incrementClickCount() {
         this.clickCount = (this.clickCount == null) ? 1 : this.clickCount + 1;
         this.lastAccessed = LocalDateTime.now();
