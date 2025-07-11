@@ -132,6 +132,36 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    @ResponseStatus(CONFLICT)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "409", description = "Conflict",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    name = "409 Response",
+                                    summary = "Handle exception when resource already exists",
+                                    value = """
+                                            {
+                                              "timestamp": "2023-10-19T06:07:35.321+00:00",
+                                              "status": 409,
+                                              "path": "/api/auth/register",
+                                              "error": "Conflict",
+                                              "message": "Username already exists"
+                                            }
+                                            """
+                            ))})
+    })
+    public ErrorResponse handleDuplicateResourceException(DuplicateResourceException e, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(new Date());
+        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(CONFLICT.value());
+        errorResponse.setError(CONFLICT.getReasonPhrase());
+        errorResponse.setMessage(e.getMessage());
+
+        return errorResponse;
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ApiResponses(value = {
@@ -161,7 +191,6 @@ public class GlobalExceptionHandler {
 
         return errorResponse;
     }
-
 
     //Custom AccessDeniedException
     @ExceptionHandler(AccessDeniedException.class)

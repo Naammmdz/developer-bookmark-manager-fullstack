@@ -1,32 +1,32 @@
-import React, { useState, useMemo } from 'react';
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import {
   BookmarkProvider,
   useBookmarks,
   CollectionWithItems,
-} from './context/BookmarkContext';
-import { useAuth } from './context/AuthContext';
+} from "./context/BookmarkContext";
+import { useAuth } from "./context/AuthContext";
 
-import ProfilePage from './pages/ProfilePage';
-import LandingPage from './pages/LandingPage';
-import AdminPage from './pages/AdminPage';
-import Header from './components/layout/Header';
-import { useRecentlyAccessed } from './hooks/useRecentlyAccessed';
-import Sidebar from './components/layout/Sidebar';
-import BookmarkGrid from './components/bookmark/BookmarkGrid';
+import ProfilePage from "./pages/ProfilePage";
+import LandingPage from "./pages/LandingPage";
+import AdminPage from "./pages/AdminPage";
+import Header from "./components/layout/Header";
+import { useRecentlyAccessed } from "./hooks/useRecentlyAccessed";
+import Sidebar from "./components/layout/Sidebar";
+import BookmarkGrid from "./components/bookmark/BookmarkGrid";
 // CollectionHeader removed as it's no longer used in BookmarksViewWithSidebar
-import MobileNavigation from './components/layout/MobileNavigation';
-import AddBookmarkModal from './components/bookmark/AddBookmarkModal';
-import AddCollectionModal from './components/collection/AddCollectionModal'; // Import AddCollectionModal
-import LoginModal from './components/auth/LoginModal';
-import RegisterModal from './components/auth/RegisterModal';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import RootRoute from './components/auth/RootRoute';
-import AdminLayout from './components/admin/AdminLayout';
-import SettingsModal from './components/settings/SettingsModal';
-import BackgroundAnimation from './components/layout/BackgroundAnimation';
-import KeyboardShortcutsButton from './components/ui/KeyboardShortcutsButton';
-import { CustomIcon } from './utils/iconMapping';
+import MobileNavigation from "./components/layout/MobileNavigation";
+import AddBookmarkModal from "./components/bookmark/AddBookmarkModal";
+import AddCollectionModal from "./components/collection/AddCollectionModal"; // Import AddCollectionModal
+import LoginModal from "./components/auth/LoginModal";
+import RegisterModal from "./components/auth/RegisterModal";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import RootRoute from "./components/auth/RootRoute";
+import AdminLayout from "./components/admin/AdminLayout";
+import SettingsModal from "./components/settings/SettingsModal";
+import BackgroundAnimation from "./components/layout/BackgroundAnimation";
+import KeyboardShortcutsButton from "./components/ui/KeyboardShortcutsButton";
+import { CustomIcon } from "./utils/iconMapping";
 import {
   Archive,
   FolderKanban,
@@ -38,8 +38,7 @@ import {
   ListPlus,
   Grid,
   List,
-} from 'lucide-react';
-
+} from "lucide-react";
 
 // Props for AppLayout
 interface AppLayoutProps {
@@ -60,7 +59,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     collectionData,
     isAddCollectionModalOpen, // Destructure new state and functions
     closeAddCollectionModal,
-    addCollection
+    addCollection,
   } = useBookmarks();
 
   const stats = React.useMemo(() => {
@@ -69,13 +68,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     const totalBookmarksStat = cd.all?.count || 0;
 
     const collectionsStat = Object.values(
-      cd as { [key: string]: CollectionWithItems },
+      cd as { [key: string]: CollectionWithItems }
     ) // Type assertion for filter
       .filter(
         (col) =>
-          col.id !== 'all' &&
-          col.id !== 'favorites' &&
-          col.id !== 'recently_added',
+          col.id !== "all" &&
+          col.id !== "favorites" &&
+          col.id !== "recently_added"
       ).length;
 
     const favoritesStat = cd.favorites?.count || 0;
@@ -104,10 +103,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           />
         </header>
 
-
         {/* Outlet for child route components */}
         <main className="p-6 flex-1 overflow-y-auto">
-          <Outlet /> {/* BookmarksViewWithSidebar or ProfileView will render here */}
+          <Outlet />{" "}
+          {/* BookmarksViewWithSidebar or ProfileView will render here */}
         </main>
       </div>
 
@@ -149,16 +148,16 @@ const BookmarksViewWithSidebar: React.FC = () => {
   } = useBookmarks();
 
   const { recentlyAccessed, addRecentlyAccessed } = useRecentlyAccessed();
-  
+
   // Get recent bookmarks for the "Recently Accessed" section
   const displayRecentBookmarks = recentlyAccessed.slice(0, 5);
   const currentViewData = collectionData?.[activeCollection];
-  const icon = currentViewData?.icon || 'folder';
-  const name = currentViewData?.name || 'Loading...';
+  const icon = currentViewData?.icon || "folder";
+  const name = currentViewData?.name || "Loading...";
 
   const baseItems = currentViewData?.items || [];
   const finalItemsToDisplay =
-    searchTerm.trim() === ''
+    searchTerm.trim() === ""
       ? baseItems
       : baseItems.filter((bookmark) => {
           const searchTermLower = searchTerm.toLowerCase();
@@ -167,7 +166,7 @@ const BookmarksViewWithSidebar: React.FC = () => {
             (bookmark.description &&
               bookmark.description.toLowerCase().includes(searchTermLower)) ||
             bookmark.tags.some((tag) =>
-              tag.toLowerCase().includes(searchTermLower),
+              tag.toLowerCase().includes(searchTermLower)
             )
           );
         });
@@ -195,24 +194,24 @@ const BookmarksViewWithSidebar: React.FC = () => {
             <button className="flex items-center gap-2 px-3 py-1.5 bg-black/20 hover:bg-black/30 border border-white/10 rounded-md text-sm text-white/90 transition-colors">
               <ArrowUpDown size={16} /> Sort
             </button>
-            <button 
-              onClick={() => setViewMode('grid')}
+            <button
+              onClick={() => setViewMode("grid")}
               className={`p-2 border border-white/10 rounded-md transition-colors ${
-                viewMode === 'grid' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-black/20 hover:bg-black/30 text-white/90'
-              }`} 
+                viewMode === "grid"
+                  ? "bg-white/20 text-white"
+                  : "bg-black/20 hover:bg-black/30 text-white/90"
+              }`}
               title="Grid View"
             >
               <Grid size={16} />
             </button>
-            <button 
-              onClick={() => setViewMode('list')}
+            <button
+              onClick={() => setViewMode("list")}
               className={`p-2 border border-white/10 rounded-md transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-black/20 hover:bg-black/30 text-white/90'
-              }`} 
+                viewMode === "list"
+                  ? "bg-white/20 text-white"
+                  : "bg-black/20 hover:bg-black/30 text-white/90"
+              }`}
               title="List View"
             >
               <List size={16} />
@@ -229,10 +228,10 @@ const BookmarksViewWithSidebar: React.FC = () => {
               Recently Accessed
             </div>
             {displayRecentBookmarks.map((bookmark) => (
-              <span 
-                key={bookmark.id} 
+              <span
+                key={bookmark.id}
                 className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm whitespace-nowrap cursor-pointer hover:bg-white/20 transition-colors"
-                onClick={() => window.open(bookmark.url, '_blank')}
+                onClick={() => window.open(bookmark.url, "_blank")}
                 title={bookmark.url}
               >
                 {bookmark.title}
@@ -249,8 +248,8 @@ const BookmarksViewWithSidebar: React.FC = () => {
             <PlusCircle size={48} className="mx-auto text-white/30 mb-4" />
             <h3 className="text-xl font-semibold text-white/80 mb-2">
               {searchTerm
-                ? 'No Bookmarks Match Your Search'
-                : 'This Collection is Empty'}
+                ? "No Bookmarks Match Your Search"
+                : "This Collection is Empty"}
             </h3>
             <p className="text-white/50 mb-6 max-w-md">
               {searchTerm
@@ -310,9 +309,9 @@ function App() {
   return (
     <BookmarkProvider>
       {/* Modals are rendered here, outside of Routes, so they can be displayed over any page */}
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={closeLoginModal} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={closeLoginModal}
         openRegisterModal={openRegisterModal}
       />
       <RegisterModal
@@ -328,10 +327,10 @@ function App() {
       <Routes>
         {/* Root route - redirects based on authentication */}
         <Route path="/" element={<RootRoute />} />
-        
+
         {/* Landing page without sidebar/layout */}
         <Route path="/landing" element={<LandingPage />} />
-        
+
         {/* Protected app routes */}
         <Route
           path="/app"
@@ -347,19 +346,16 @@ function App() {
           }
         >
           <Route index element={<BookmarksViewWithSidebar />} />
-          <Route
-            path="profile"
-            element={<ProfileView />}
-          />
+          <Route path="profile" element={<ProfileView />} />
           {/* Add other routes that use AppLayout here */}
         </Route>
-        
+
         {/* Admin routes with AdminLayout */}
         <Route
           path="/app/admin"
           element={
             <ProtectedRoute>
-              {currentUser?.role === 'admin' ? (
+              {currentUser?.roles.includes("ROLE_ADMIN") ? (
                 <AdminLayout
                   openLoginModal={openLoginModal}
                   openRegisterModal={openRegisterModal}
@@ -374,13 +370,63 @@ function App() {
         >
           <Route index element={<AdminPage />} />
           <Route path="users" element={<AdminPage />} />
-          <Route path="roles" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Roles & Permissions</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-          <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Analytics</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-          <Route path="system" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Status</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-          <Route path="logs" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Logs</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-          <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Admin Settings</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route
+            path="roles"
+            element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-white mb-4">
+                  Roles & Permissions
+                </h1>
+                <p className="text-white/70">This feature is coming soon...</p>
+              </div>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-white mb-4">
+                  Analytics
+                </h1>
+                <p className="text-white/70">This feature is coming soon...</p>
+              </div>
+            }
+          />
+          <Route
+            path="system"
+            element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-white mb-4">
+                  System Status
+                </h1>
+                <p className="text-white/70">This feature is coming soon...</p>
+              </div>
+            }
+          />
+          <Route
+            path="logs"
+            element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-white mb-4">
+                  System Logs
+                </h1>
+                <p className="text-white/70">This feature is coming soon...</p>
+              </div>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-white mb-4">
+                  Admin Settings
+                </h1>
+                <p className="text-white/70">This feature is coming soon...</p>
+              </div>
+            }
+          />
         </Route>
-        
+
         {/* Fallback for unmatched routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

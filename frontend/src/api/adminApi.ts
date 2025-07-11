@@ -85,7 +85,7 @@ export const getUsers = async (): Promise<User[]> => {
 export const createUser = async (userData: RegisterData): Promise<User> => {
   try {
     // Call the register endpoint
-    const { data } = await api.post('/auth/register', userData);
+    const { data } = await api.post('/api/auth/register', userData);
     
     // Map the response to User interface (excluding JWT token)
     const newUser: User = {
