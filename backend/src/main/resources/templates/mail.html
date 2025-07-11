@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chào mừng đến với XXX</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      border-radius: 8px;
+      padding: 30px;
+      color: #333;
+      line-height: 1.6;
+    }
+    h2 {
+      color: #2e7d32;
+    }
+    a.button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #1976d2;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    small {
+      font-size: 12px;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+<div class="email-container">
+  <h2>🎉 Chúc mừng bạn đã trở thành thành viên của <span style="color:#1976d2;">Bookmark Manager </span>!</h2>
+  <p>Xin chào <strong th:text="${name}"></strong>,</p>
+  <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>Bookmark Manager</strong> – nơi kết nối và chia sẻ kiến thức.</p>
+
+  <h3>🔐 Thông tin tài khoản:</h3>
+  <ul>
+    <li><strong>Tài khoản:</strong> <span th:text="${username}"></span></li>
+    <li><strong>Mật khẩu:</strong> <span th:text="${password}"></span></li>
+  </ul>
+
+  <p>Bạn có thể đăng nhập bằng nút bên dưới để bắt đầu sử dụng:</p>
+  <a th:href="${loginUrl}" class="button">👉 Đăng nhập ngay</a>
+
+  <hr style="margin: 30px 0;">
+  <small>
+    Đây là email tự động. Nếu bạn không đăng ký tài khoản, vui lòng bỏ qua.
+  </small>
+</div>
+</body>
+</html>
+
