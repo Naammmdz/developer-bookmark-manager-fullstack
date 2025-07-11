@@ -35,7 +35,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/me")
+    @PostMapping("/me/{token}")
     @Operation(summary = "Get current user details")
     public ResponseEntity<AuthResponse> getCurrentUser(@PathVariable String token) {
         AuthResponse response = authService.getCurrentUser(token);
