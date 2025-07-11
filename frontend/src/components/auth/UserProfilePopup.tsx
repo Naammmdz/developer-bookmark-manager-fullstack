@@ -1,6 +1,7 @@
-import React from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { User, LogOut, Mail } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { User, LogOut, Mail, Settings } from "lucide-react";
 
 interface UserProfilePopupProps {
   onClose: () => void;
@@ -19,7 +20,7 @@ const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ onClose }) => {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
       onClick={handleOverlayClick}
     >
@@ -46,7 +47,7 @@ const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ onClose }) => {
               <p className="text-white font-medium">{user.username}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Mail size={18} className="text-white/60" />
             <div>
@@ -54,7 +55,7 @@ const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ onClose }) => {
               <p className="text-white font-medium">{user.email}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <User size={18} className="text-white/60" />
             <div>
@@ -62,27 +63,42 @@ const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ onClose }) => {
               <p className="text-white font-medium">{user.fullName}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <div className="w-[18px] h-[18px] flex items-center justify-center">
-              <div className={`w-2 h-2 rounded-full ${
-                user.role === 'admin' ? 'bg-yellow-500' : 'bg-green-500'
-              }`}></div>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  user.roles.includes("ROLE_ADMIN")
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
+                }`}
+              ></div>
             </div>
             <div>
-              <p className="text-white/60 text-sm">Role</p>
-              <p className="text-white font-medium capitalize">{user.role}</p>
+              <p className="text-white/60 text-sm">Roles</p>
+              <div className="flex gap-1">
+                {user.roles.map((role, index) => (
+                  <span
+                    key={index}
+                    className="text-white font-medium text-xs px-2 py-1 rounded-full bg-primary/20 text-primary"
+                  >
+                    {role.replace("ROLE_", "")}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
         <div className="flex justify-end gap-3">
-          <button
+          <Link
+            to="/app/profile"
             onClick={onClose}
-            className="text-white/70 hover:text-white px-4 py-2 rounded-md hover:bg-white/10 transition-colors"
+            className="bg-primary hover:bg-primary/90 text-black px-4 py-2 rounded-md font-semibold flex items-center gap-2 transition-colors"
           >
-            Close
-          </button>
+            <Settings size={16} />
+            Profile Settings
+          </Link>
           <button
             onClick={() => {
               logout();
@@ -100,4 +116,3 @@ const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ onClose }) => {
 };
 
 export default UserProfilePopup;
-

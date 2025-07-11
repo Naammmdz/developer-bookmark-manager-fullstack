@@ -1,72 +1,171 @@
-import React from 'react';
-import { useAuth } from '../context/AuthContext';
-
-// Assuming a GlassCard-like style as suggested in the prompt and used elsewhere.
-// No actual GlassCard component is imported, direct styling is applied.
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import ProfileModal from "../components/profile/ProfileModal";
+import ChangePasswordModal from "../components/profile/ChangePasswordModal";
 
 const ProfilePage: React.FC = () => {
-  const { user: currentUser, logout, isLoading: loading } = useAuth();
+  const { user } = useAuth();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
+    useState(false);
 
-  if (loading && !currentUser) {
-    // Show a loading indicator if auth state is still being determined
-    // and no user is yet available (e.g., on initial page load checking localStorage)
+  if (!user) {
     return (
-      <div className="p-4 md:p-6 text-center">
-        <p className="text-white/80 text-lg">Loading profile...</p>
-        {/* You could add a spinner here */}
-      </div>
-    );
-  }
-
-  if (!currentUser) {
-    // This case should ideally be handled by a protected route later
-    // For now, it shows a message if the user is definitely logged out.
-    return (
-      <div className="p-4 md:p-6 text-center max-w-md mx-auto">
-        <div className="bg-background-dark/70 backdrop-blur-md p-8 rounded-xl shadow-2xl border border-white/10">
-          <h1 className="text-2xl font-semibold text-white mb-4">Access Denied</h1>
-          <p className="text-white/80 mb-6">Please log in to view your profile.</p>
-          {/* Optionally, include a button to navigate to login, though routing handles this better */}
-          {/* <button className="px-6 py-2 bg-primary text-black rounded-lg font-medium">Login</button> */}
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-white text-center">
+          <h1 className="text-2xl font-bold mb-4">
+            Please log in to view your profile
+          </h1>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-2xl mx-auto">
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent py-2">
-          User Profile
-        </h1>
-      </header>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold text-white mb-8">Profile</h1>
 
-      <div className="bg-background-darker/80 backdrop-blur-xl p-6 sm:p-8 rounded-xl shadow-2xl border border-white/10">
-        <div className="space-y-6">
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-white/50 uppercase tracking-wider mb-1">Email Address</label>
-            <p className="text-md sm:text-lg text-white/90 break-all">{currentUser.email}</p>
-          </div>
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-white/50 uppercase tracking-wider mb-1">Display Name</label>
-            <p className="text-md sm:text-lg text-white/90">{currentUser.name || 'N/A'}</p>
-          </div>
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-white/50 uppercase tracking-wider mb-1">User ID</label>
-            <p className="text-xs sm:text-sm text-white/70 break-all">{currentUser.id}</p>
-          </div>
-        </div>
+          <div className="bg-background-darker rounded-xl p-6 border border-white/10">
+            {/* Avatar Section */}
+            <div className="flex items-center mb-6">
+              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mr-4">
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Avatar"
+                    className="w-20 h-20 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-primary">
+                    {user.username.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-white">
+                  {user.fullName}
+                </h2>
+                <p className="text-white/70">@{user.username}</p>
+              </div>
+            </div>
 
-        <div className="mt-8 sm:mt-10 border-t border-white/10 pt-6 sm:pt-8">
-          <button
-            onClick={logout}
-            disabled={loading}
-            className="w-full md:w-auto px-8 py-3 rounded-lg bg-red-500/80 hover:bg-red-500/100 text-white font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-background-darker disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Logging out...' : 'Logout'}
-          </button>
+            {/* User Information */}
+            <div className="space-y-4 mb-6">
+              <div className="flex justify-between items-center py-3 border-b border-white/10">
+                <span className="text-white/70">Username:</span>
+                <span className="text-white font-medium">{user.username}</span>
+              </div>
+
+              <div className="flex justify-between items-center py-3 border-b border-white/10">
+                <span className="text-white/70">Email:</span>
+                <span className="text-white font-medium">{user.email}</span>
+              </div>
+
+              <div className="flex justify-between items-center py-3 border-b border-white/10">
+                <span className="text-white/70">Full Name:</span>
+                <span className="text-white font-medium">{user.fullName}</span>
+              </div>
+
+              <div className="flex justify-between items-center py-3 border-b border-white/10">
+                <span className="text-white/70">Status:</span>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    user.active
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-red-500/20 text-red-400"
+                  }`}
+                >
+                  {user.active ? "Active" : "Inactive"}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center py-3 border-b border-white/10">
+                <span className="text-white/70">Roles:</span>
+                <div className="flex gap-2">
+                  {user.roles.map((role, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary"
+                    >
+                      {role.replace("ROLE_", "")}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center py-3 border-b border-white/10">
+                <span className="text-white/70">Member Since:</span>
+                <span className="text-white font-medium">
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center py-3">
+                <span className="text-white/70">Last Updated:</span>
+                <span className="text-white font-medium">
+                  {new Date(user.updatedAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="bg-primary hover:bg-primary/90 text-black px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit Profile
+              </button>
+
+              <button
+                onClick={() => setIsChangePasswordModalOpen(true)}
+                className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                  />
+                </svg>
+                Change Password
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+      />
     </div>
   );
 };
