@@ -4,7 +4,6 @@ import { useBookmarks } from '../../context/BookmarkContext';
 import { useAuth } from '../../context/AuthContext';
 import { Bookmark, ListPlus, User, Search } from 'lucide-react'; // Added new icons
 import { ShimmerButton } from '../ui/shimmer-button';
-import UserProfilePopup from '../auth/UserProfilePopup';
 
 interface HeaderProps {
   openLoginModal: () => void;
@@ -15,7 +14,6 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, openSettingsModal }) => {
   const { searchTerm, setSearchTerm, openModal } = useBookmarks();
   const { user: currentUser } = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value); // setSearchTerm is from useBookmarks context
@@ -23,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, open
 
   const handleProfileClick = () => {
     if (currentUser) {
-      setIsProfileOpen(true);
+      openSettingsModal(); // Open the settings modal instead of profile popup
     } else {
       openLoginModal();
     }
@@ -77,11 +75,6 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, open
           )}
         </button>
       </div>
-      
-      {/* User Profile Popup */}
-      {isProfileOpen && (
-        <UserProfilePopup onClose={() => setIsProfileOpen(false)} />
-      )}
     </div>
   );
 };
