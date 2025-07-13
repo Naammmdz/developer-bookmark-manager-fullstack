@@ -15,8 +15,17 @@ import java.util.List;
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     List<Bookmark> findByUser(User user);
     List<Bookmark> findByUserAndIsFavoriteTrue(User user);
-    List<Bookmark> findByUserAndCategory(User user, String category);
+    
+    // Pagination methods
     Page<Bookmark> findByUser(User user, Pageable pageable);
+    Page<Bookmark> findByUserAndIsFavoriteTrue(User user, Pageable pageable);
+    Page<Bookmark> findByUserAndCollection(User user, com.g1.bookmark_manager.entity.Collection collection, Pageable pageable);
+    Page<Bookmark> findByUserAndCollectionIsNull(User user, Pageable pageable);
+    
+    // Collection-related queries
+    List<Bookmark> findByCollection(com.g1.bookmark_manager.entity.Collection collection);
+    List<Bookmark> findByUserAndCollection(User user, com.g1.bookmark_manager.entity.Collection collection);
+    List<Bookmark> findByUserAndCollectionIsNull(User user);
     
     @Query("SELECT b FROM Bookmark b WHERE b.user = :user AND " +
            "(LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -24,6 +33,4 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
            "LOWER(b.tags) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<Bookmark> searchBookmarks(@Param("user") User user, @Param("keyword") String keyword);
     
-    @Query("SELECT DISTINCT b.category FROM Bookmark b WHERE b.user = :user AND b.category IS NOT NULL")
-    List<String> findDistinctCategoriesByUser(@Param("user") User user);
 }

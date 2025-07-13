@@ -14,6 +14,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 
 @RestController
@@ -27,10 +32,17 @@ public class BookmarkController {
     private BookmarkService bookmarkService;
 
     @GetMapping
-    @Operation(summary = "Get all bookmarks for the current user")
-    public ResponseEntity<List<BookmarkResponse>> getAllBookmarks() {
+    @Operation(summary = "Get all bookmarks for the current user with pagination")
+    public ResponseEntity<Page<BookmarkResponse>> getAllBookmarks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         String username = getCurrentUsername();
-        List<BookmarkResponse> bookmarks = bookmarkService.getAllBookmarks(username);
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<BookmarkResponse> bookmarks = bookmarkService.getAllBookmarks(username, pageable);
         return ResponseEntity.ok(bookmarks);
     }
 
@@ -67,18 +79,17 @@ public class BookmarkController {
     }
 
     @GetMapping("/favorites")
-    @Operation(summary = "Get favorite bookmarks")
-    public ResponseEntity<List<BookmarkResponse>> getFavoriteBookmarks() {
+    @Operation(summary = "Get favorite bookmarks with pagination")
+    public ResponseEntity<Page<BookmarkResponse>> getFavoriteBookmarks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         String username = getCurrentUsername();
-        List<BookmarkResponse> bookmarks = bookmarkService.getFavoriteBookmarks(username);
-        return ResponseEntity.ok(bookmarks);
-    }
-
-    @GetMapping("/category/{category}")
-    @Operation(summary = "Get bookmarks by category")
-    public ResponseEntity<List<BookmarkResponse>> getBookmarksByCategory(@PathVariable String category) {
-        String username = getCurrentUsername();
-        List<BookmarkResponse> bookmarks = bookmarkService.getBookmarksByCategory(category, username);
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<BookmarkResponse> bookmarks = bookmarkService.getFavoriteBookmarks(username, pageable);
         return ResponseEntity.ok(bookmarks);
     }
 
@@ -90,12 +101,35 @@ public class BookmarkController {
         return ResponseEntity.ok(bookmarks);
     }
 
-    @GetMapping("/categories")
-    @Operation(summary = "Get all categories for the current user")
-    public ResponseEntity<List<String>> getCategories() {
+    @GetMapping("/collection/{collectionId}")
+    @Operation(summary = "Get bookmarks by collection with pagination")
+    public ResponseEntity<Page<BookmarkResponse>> getBookmarksByCollection(
+            @PathVariable Long collectionId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         String username = getCurrentUsername();
-        List<String> categories = bookmarkService.getCategories(username);
-        return ResponseEntity.ok(categories);
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<BookmarkResponse> bookmarks = bookmarkService.getBookmarksByCollection(collectionId, username, pageable);
+        return ResponseEntity.ok(bookmarks);
+    }
+
+    @GetMapping("/uncategorized")
+    @Operation(summary = "Get uncategorized bookmarks with pagination")
+    public ResponseEntity<Page<BookmarkResponse>> getUncategorizedBookmarks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        String username = getCurrentUsername();
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<BookmarkResponse> bookmarks = bookmarkService.getUncategorizedBookmarks(username, pageable);
+        return ResponseEntity.ok(bookmarks);
     }
 
     private String getCurrentUsername() {

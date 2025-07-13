@@ -6,8 +6,12 @@ import com.g1.bookmark_manager.entity.Bookmark;
 import com.g1.bookmark_manager.entity.User;
 import com.g1.bookmark_manager.exception.ResourceNotFoundException;
 import com.g1.bookmark_manager.repository.BookmarkRepository;
+import com.g1.bookmark_manager.repository.CollectionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,13 +24,14 @@ public class BookmarkService {
 
     @Autowired
     private AuthService authService;
+    
+    @Autowired
+    private CollectionRepository collectionRepository;
 
-    public List<BookmarkResponse> getAllBookmarks(String username) {
+    public Page<BookmarkResponse> getAllBookmarks(String username, Pageable pageable) {
         User user = authService.findByUsername(username);
-        return bookmarkRepository.findByUser(user)
-                .stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+        return bookmarkRepository.findByUser(user, pageable)
+                .map(this::convertToResponse);
     }
 
     public BookmarkResponse getBookmarkById(Long id, String username) {
@@ -48,8 +53,10 @@ public class BookmarkService {
         bookmark.setTitle(request.getTitle());
         bookmark.setUrl(request.getUrl());
         bookmark.setDescription(request.getDescription());
-        bookmark.setCategory(request.getCategory());
-        bookmark.setTags(request.getTags());
+        // Convert tags string to list if needed
+        if (request.getTags() != null && !request.getTags().trim().isEmpty()) {
+            bookmark.setTags(List.of(request.getTags().split(",")));
+        }
         bookmark.setIsFavorite(request.getIsFavorite());
         bookmark.setUser(user);
         
@@ -69,8 +76,10 @@ public class BookmarkService {
         bookmark.setTitle(request.getTitle());
         bookmark.setUrl(request.getUrl());
         bookmark.setDescription(request.getDescription());
-        bookmark.setCategory(request.getCategory());
-        bookmark.setTags(request.getTags());
+        // Convert tags string to list if needed
+        if (request.getTags() != null && !request.getTags().trim().isEmpty()) {
+            bookmark.setTags(List.of(request.getTags().split(",")));
+        }
         bookmark.setIsFavorite(request.getIsFavorite());
         
         bookmark = bookmarkRepository.save(bookmark);
@@ -89,20 +98,10 @@ public class BookmarkService {
         bookmarkRepository.delete(bookmark);
     }
 
-    public List<BookmarkResponse> getFavoriteBookmarks(String username) {
+    public Page<BookmarkResponse> getFavoriteBookmarks(String username, Pageable pageable) {
         User user = authService.findByUsername(username);
-        return bookmarkRepository.findByUserAndIsFavoriteTrue(user)
-                .stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    public List<BookmarkResponse> getBookmarksByCategory(String category, String username) {
-        User user = authService.findByUsername(username);
-        return bookmarkRepository.findByUserAndCategory(user, category)
-                .stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+        return bookmarkRepository.findByUserAndIsFavoriteTrue(user, pageable)
+                .map(this::convertToResponse);
     }
 
     public List<BookmarkResponse> searchBookmarks(String keyword, String username) {
@@ -112,20 +111,37 @@ public class BookmarkService {
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
-
-    public List<String> getCategories(String username) {
+    
+    // Collection-related methods
+    public Page<BookmarkResponse> getBookmarksByCollection(Long collectionId, String username, Pageable pageable) {
         User user = authService.findByUsername(username);
-        return bookmarkRepository.findDistinctCategoriesByUser(user);
+        com.g1.bookmark_manager.entity.Collection collection = collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Collection not found with id: " + collectionId));
+        
+        if (!collection.isOwnedBy(user)) {
+            throw new ResourceNotFoundException("Collection not found or access denied");
+        }
+        
+        return bookmarkRepository.findByUserAndCollection(user, collection, pageable)
+                .map(this::convertToResponse);
+    }
+    
+    public Page<BookmarkResponse> getUncategorizedBookmarks(String username, Pageable pageable) {
+        User user = authService.findByUsername(username);
+        return bookmarkRepository.findByUserAndCollectionIsNull(user, pageable)
+                .map(this::convertToResponse);
     }
 
     private BookmarkResponse convertToResponse(Bookmark bookmark) {
+        String tagsString = bookmark.getTags() != null ? 
+                String.join(",", bookmark.getTags()) : "";
         return new BookmarkResponse(
                 bookmark.getId(),
                 bookmark.getTitle(),
                 bookmark.getUrl(),
                 bookmark.getDescription(),
-                bookmark.getCategory(),
-                bookmark.getTags(),
+                null, // category field removed from entity
+                tagsString,
                 bookmark.getIsFavorite(),
                 bookmark.getCreatedAt(),
                 bookmark.getUpdatedAt(),
