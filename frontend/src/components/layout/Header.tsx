@@ -9,9 +9,10 @@ interface HeaderProps {
   openLoginModal: () => void;
   openRegisterModal: () => void;
   openSettingsModal: () => void;
+  searchInputRef?: React.RefObject<HTMLInputElement>;
 }
 
-const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, openSettingsModal }) => {
+const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, openSettingsModal, searchInputRef }) => {
   const { searchTerm, setSearchTerm, openModal } = useBookmarks();
   const { user: currentUser } = useAuth();
 
@@ -44,6 +45,7 @@ const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, open
           <Search size={18} className="text-white/40" />
         </div>
         <input
+          ref={searchInputRef}
           type="search"
           placeholder="Search"
           value={searchTerm}

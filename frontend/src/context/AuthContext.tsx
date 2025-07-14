@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             email: freshUserData.email,
             fullName: freshUserData.fullName,
             avatarUrl: null,
-            role: roles.includes('admin') ? ['admin'] : ['user'], // Default to 'user' role
+            role: roles.includes('ROLE_ADMIN') ? 'admin' : 'user',
             active: true,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: response.email,
         fullName: response.fullName,
         avatarUrl: null,
-        role: roles.includes('admin') ? ['admin'] : ['user'], // Default to 'user' role
+        role: roles.includes('ROLE_ADMIN') ? 'admin' : 'user',
         active: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: response.email,
         fullName: response.fullName,
         avatarUrl: null,
-        role: roles.includes('admin') ? ['admin'] : ['user'], // Default to 'user' role
+        role: roles.includes('ROLE_ADMIN') ? 'admin' : 'user',
         active: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

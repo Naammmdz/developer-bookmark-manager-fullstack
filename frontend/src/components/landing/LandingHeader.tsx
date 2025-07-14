@@ -42,12 +42,12 @@ const LandingHeader: React.FC = () => {
   return (
     <>
       <header className="fixed left-0 top-0 z-50 w-full -translate-y-4 animate-fade-in border-b border-white/10 bg-background/80 backdrop-blur-md opacity-0">
-        <div className="container flex h-14 items-center justify-between px-8">
-          <Link className="text-md flex items-center font-bold text-white ml-80" to="/landing">
+        <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link className="text-md flex items-center font-bold text-white" to="/landing">
             Dev Bookmarks
           </Link>
 
-          <div className="hidden md:flex ml-auto h-full items-center space-x-4">
+          <div className="hidden md:flex h-full items-center space-x-4">
             {user ? (
               <>
                 {isAdmin && (
@@ -95,7 +95,7 @@ const LandingHeader: React.FC = () => {
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <nav className="fixed left-0 top-0 z-40 h-screen w-full overflow-auto bg-background/90 backdrop-blur-md md:hidden">
-          <div className="container flex h-14 items-center justify-between px-6">
+          <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-4 sm:px-6">
             <Link className="text-md flex items-center font-bold text-white" to="/landing">
               Dev Bookmarks
             </Link>
@@ -107,7 +107,7 @@ const LandingHeader: React.FC = () => {
             </button>
           </div>
           
-          <ul className="flex flex-col space-y-4 px-6 py-8">
+          <ul className="flex flex-col space-y-4 px-4 sm:px-6 py-8">
             {menuItems.map((item) => (
               <li key={item.id}>
                 <a

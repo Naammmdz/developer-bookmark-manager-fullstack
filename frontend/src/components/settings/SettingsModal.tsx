@@ -1,52 +1,15 @@
 import React, { useState } from 'react';
-import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
-import { X, CheckCircle, User, Mail, LogOut, Settings, Shield, Info } from 'lucide-react';
+import { X, User, Mail, LogOut, Info } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// These should ideally match the keys and provide human-readable names
-// for the options defined in BackgroundAnimation.tsx
-// Preview styles are simplified here; they could be more elaborate.
-const backgroundDisplayOptions = [
-  {
-    key: 'defaultGradient',
-    name: 'Default Dark',
-    previewStyle: { background: '#000000' }
-  },
-  {
-    key: 'oceanBlue',
-    name: 'Ocean Blue',
-    previewStyle: { background: 'linear-gradient(135deg, #1e3a8a, #1e40af, #0891b2)' }
-  },
-  {
-    key: 'sunsetOrange',
-    name: 'Sunset Orange',
-    previewStyle: { background: 'linear-gradient(135deg, #9a3412, #dc2626, #eab308)' }
-  },
-  {
-    key: 'devDark',
-    name: 'Developer Dark',
-    previewStyle: { background: '#111827' }
-  },
-  {
-    key: 'cosmicPurple',
-    name: 'Cosmic Purple',
-    previewStyle: { background: 'linear-gradient(135deg, #581c87, #7c2d12, #be185d)'}
-  },
-  {
-    key: 'forestGreen',
-    name: 'Forest Green',
-    previewStyle: { background: '#166534' }
-  }
-];
 
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
-  const { selectedBackground, setSelectedBackground } = useSettings();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('Account');
 
@@ -122,75 +85,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     );
   };
 
-  const renderDisplaySettingsTab = () => {
-    return (
-      <div>
-        <h3 className="text-lg font-medium mb-1 text-white/90">Background Theme</h3>
-        <p className="text-sm text-white/60 mb-5">Choose your preferred background style for the application.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-          {backgroundDisplayOptions.map((option) => (
-            <button
-              key={option.key}
-              onClick={() => {
-                console.log('SettingsModal - Clicking background option:', option.key);
-                setSelectedBackground(option.key);
-              }}
-              className={`
-                p-3.5 rounded-lg border text-left
-                transition-all duration-200 ease-in-out
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker
-                ${selectedBackground === option.key
-                  ? 'border-primary bg-primary/10 ring-2 ring-primary'
-                  : 'border-white/20 bg-white/[.03] hover:border-white/30 hover:bg-white/[.06]'}
-              `}
-              aria-pressed={selectedBackground === option.key}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-white/95">{option.name}</span>
-                {selectedBackground === option.key && <CheckCircle size={18} className="text-primary" />}
-              </div>
-              <div
-                className="w-full h-7 mt-2 rounded border border-white/10"
-                style={option.previewStyle}
-                aria-hidden="true"
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
 
-  const renderPrivacySecurityTab = () => {
-    return (
-      <div>
-        <h3 className="text-lg font-medium mb-1 text-white/90">Privacy & Security Settings</h3>
-        <p className="text-sm text-white/60 mb-5">Manage your privacy and data settings below.</p>
-        <div className="space-y-4 mb-6">
-          <div className="flex items-center justify-between">
-            <span className="text-white/70">Data Retention</span>
-            <button className="bg-primary hover:bg-primary/90 text-black px-3 py-2 rounded-md font-medium transition-colors">Configure</button>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white/70">Export Data</span>
-            <button className="bg-primary hover:bg-primary/90 text-black px-3 py-2 rounded-md font-medium transition-colors">Export</button>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white/70">Clear Browsing Data</span>
-            <button className="bg-primary hover:bg-primary/90 text-black px-3 py-2 rounded-md font-medium transition-colors">Clear</button>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white/70">Enable Two-Factor Authentication</span>
-            <button className="bg-primary hover:bg-primary/90 text-black px-3 py-2 rounded-md font-medium transition-colors">Enable</button>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white/70">Session Timeout</span>
-            <button className="bg-primary hover:bg-primary/90 text-black px-3 py-2 rounded-md font-medium transition-colors">Set</button>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const renderAboutTab = () => {
     return (
@@ -219,10 +114,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     switch (activeTab) {
       case 'Account':
         return renderAccountTab();
-      case 'Display Settings':
-        return renderDisplaySettingsTab();
-      case 'Privacy & Security':
-        return renderPrivacySecurityTab();
       case 'About':
         return renderAboutTab();
       default:
@@ -249,24 +140,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             >
               <User size={16} />
               Account
-            </button>
-            <button
-              onClick={() => setActiveTab('Display Settings')}
-              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'Display Settings' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
-              }`}
-            >
-              <Settings size={16} />
-              Display Settings
-            </button>
-            <button
-              onClick={() => setActiveTab('Privacy & Security')}
-              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'Privacy & Security' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
-              }`}
-            >
-              <Shield size={16} />
-              Privacy & Security
             </button>
             <button
               onClick={() => setActiveTab('About')}

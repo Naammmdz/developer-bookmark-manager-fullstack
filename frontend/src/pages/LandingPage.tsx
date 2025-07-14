@@ -1,21 +1,25 @@
-import React, { useState } from 'react';
-import { ArrowRight, BarChart, File, Globe, HeartHandshake, Rss, Shield, Bookmark, Code, Database, Terminal, Github, Folder } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowRight, Bookmark, Search, FolderOpen, Sync, Zap, Globe, Code, Star, Database, FileText, Hash } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnimatedShinyText from '../components/ui/AnimatedShinyText';
-import { TextAnimate } from '../components/ui/text-animate';
 import { Particles } from '../components/ui/particles';
 import { Meteors } from '../components/ui/meteors';
-import BorderBeam from '../components/ui/BorderBeam';
-import Marquee from '../components/ui/Marquee';
-import CtaCard from '../components/ui/CtaCard';
+import { RetroGrid } from '../components/magicui/retro-grid';
+import { TextAnimate } from '../components/magicui/text-animate';
+import { VelocityScroll } from '../components/magicui/scroll-based-velocity';
 import { useInView } from '../hooks/useInView';
 import LoginModal from '../components/auth/LoginModal';
 import RegisterModal from '../components/auth/RegisterModal';
+import { cn } from '../lib/utils';
+import { AnimatedBeam } from '../components/magicui/animated-beam';
+import { Marquee } from '../components/magicui/marquee';
+import { AnimatedList } from '../components/magicui/animated-list';
+import { BentoCard, BentoGrid } from '../components/magicui/bento-grid';
 
-// Import hero images
 import heroDarkImg from '../imgs/hero-dark.png';
 import heroLightImg from '../imgs/hero-light.png';
+import BorderBeam from '../components/ui/BorderBeam';
 import ClientSection from '../components/landing/ClientSection';
 import PricingSection from '../components/landing/PricingSection';
 import LandingHeader from '../components/landing/LandingHeader';
@@ -113,20 +117,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoginClick }) => {
             size={200}
             duration={12}
             delay={0}
+            borderWidth={2}
+            colorFrom="#ff6b6b"
+            colorTo="#4ecdc4"
           />
           
-          {/* Dark mode image */}
           <img
             src={heroDarkImg}
-            alt="Developer Bookmark Manager - Dark Theme"
-            className="relative hidden size-full rounded-[inherit] border object-contain dark:block"
-          />
-          
-          {/* Light mode image */}
-          <img
-            src={heroLightImg}
-            alt="Developer Bookmark Manager - Light Theme"
-            className="relative block size-full rounded-[inherit] border object-contain dark:hidden"
+            alt="Developer Bookmark Manager"
+            className="relative size-full rounded-[inherit] border object-contain"
           />
         </div>
       </div>
@@ -135,23 +134,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoginClick }) => {
 };
 
 
-// Helper function to shuffle array
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const shuffled = [...array];
-  let currentIndex = shuffled.length;
-  let randomIndex;
-
-  while (currentIndex !== 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-    [shuffled[currentIndex], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[currentIndex]];
-  }
-  return shuffled;
-};
 
 interface CTASectionProps {
   onLoginClick: () => void;
 }
+
 
 const CTASection: React.FC<CTASectionProps> = ({ onLoginClick }) => {
   const { user } = useAuth();
@@ -164,98 +151,48 @@ const CTASection: React.FC<CTASectionProps> = ({ onLoginClick }) => {
       onLoginClick();
     }
   };
-  const tiles = [
-    {
-      icon: Code,
-      bg: 'pointer-events-none absolute left-1/2 top-1/2 size-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r from-orange-600 via-rose-600 to-violet-600 opacity-70 blur-[20px]'
-    },
-    {
-      icon: Terminal,
-      bg: 'pointer-events-none absolute left-1/2 top-1/2 size-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 opacity-70 blur-[20px]'
-    },
-    {
-      icon: Github,
-      bg: 'pointer-events-none absolute left-1/2 top-1/2 size-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r from-green-500 via-teal-500 to-emerald-600 opacity-70 blur-[20px]'
-    },
-    {
-      icon: Database,
-      bg: 'pointer-events-none absolute left-1/2 top-1/2 size-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 opacity-70 blur-[20px]'
-    },
-    {
-      icon: Folder,
-      bg: 'pointer-events-none absolute left-1/2 top-1/2 size-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r from-orange-600 via-rose-600 to-violet-600 opacity-70 blur-[20px]'
-    },
-    {
-      icon: File,
-      bg: 'pointer-events-none absolute left-1/2 top-1/2 size-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r from-gray-600 via-gray-500 to-gray-400 opacity-70 blur-[20px]'
-    }
-  ];
-
-  const randomTiles1 = shuffleArray(tiles);
-  const randomTiles2 = shuffleArray(tiles);
-  const randomTiles3 = shuffleArray(tiles);
-  const randomTiles4 = shuffleArray(tiles);
 
   return (
     <section id="cta">
       <div className="py-14">
         <div className="flex w-full flex-col items-center justify-center">
-          <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
-            <Marquee reverse className="-delay-[200ms] [--duration:10s]" repeat={5}>
-              {randomTiles1.map(({ icon: Icon, bg }, id) => (
-                <CtaCard key={id}>
-                  <Icon className="size-full text-white/40" />
-                  <div className={bg} />
-                </CtaCard>
-              ))}
-            </Marquee>
-            <Marquee reverse className="[--duration:25s]" repeat={5}>
-              {randomTiles2.map(({ icon: Icon, bg }, id) => (
-                <CtaCard key={id}>
-                  <Icon className="size-full text-white/40" />
-                  <div className={bg} />
-                </CtaCard>
-              ))}
-            </Marquee>
-            <Marquee reverse className="-delay-[200ms] [--duration:20s]" repeat={5}>
-              {randomTiles1.map(({ icon: Icon, bg }, id) => (
-                <CtaCard key={id}>
-                  <Icon className="size-full text-white/40" />
-                  <div className={bg} />
-                </CtaCard>
-              ))}
-            </Marquee>
-            <Marquee reverse className="[--duration:30s]" repeat={5}>
-              {randomTiles2.map(({ icon: Icon, bg }, id) => (
-                <CtaCard key={id}>
-                  <Icon className="size-full text-white/40" />
-                  <div className={bg} />
-                </CtaCard>
-              ))}
-            </Marquee>
-            <Marquee reverse className="-delay-[200ms] [--duration:20s]" repeat={5}>
-              {randomTiles3.map(({ icon: Icon, bg }, id) => (
-                <CtaCard key={id}>
-                  <Icon className="size-full text-white/40" />
-                  <div className={bg} />
-                </CtaCard>
-              ))}
-            </Marquee>
-            <Marquee reverse className="[--duration:30s]" repeat={5}>
-              {randomTiles4.map(({ icon: Icon, bg }, id) => (
-                <CtaCard key={id}>
-                  <Icon className="size-full text-white/40" />
-                  <div className={bg} />
-                </CtaCard>
-              ))}
-            </Marquee>
-            <div className="absolute z-10">
+          <div className="relative flex w-full flex-col items-center justify-center overflow-hidden min-h-[700px]">
+            <VelocityScroll
+              defaultVelocity={1}
+              numRows={8}
+              className="text-center font-display text-4xl font-bold tracking-[-0.02em] text-white/20 drop-shadow-sm dark:text-white/20 md:text-7xl md:leading-[5rem]"
+            >
+              ORGANIZE • SEARCH • BOOKMARK • SYNC • SHARE • DISCOVER • SAVE • MANAGE •
+            </VelocityScroll>
+            
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-background"></div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-background"></div>
+            <div className="absolute z-10 flex flex-col items-center justify-center">
               <div className="mx-auto size-24 rounded-[2rem] border bg-white/10 p-3 shadow-2xl backdrop-blur-md dark:bg-black/10 lg:size-32">
                 <Bookmark className="mx-auto size-16 text-white lg:size-24" />
               </div>
               <div className="z-10 mt-4 flex flex-col items-center text-center text-primary">
-                <h1 className="text-3xl font-bold lg:text-4xl">Stop losing your dev resources.</h1>
-                <p className="mt-2">Organize all your coding bookmarks in one place. Start free today.</p>
+                <TextAnimate 
+                  animation="blurInUp" 
+                  by="word" 
+                  as="h1" 
+                  className="text-3xl font-bold lg:text-4xl"
+                  startOnView
+                  once
+                >
+                  Stop losing your dev resources.
+                </TextAnimate>
+                <TextAnimate 
+                  animation="slideUp" 
+                  by="word" 
+                  as="p" 
+                  className="mt-2"
+                  startOnView
+                  once
+                  delay={0.3}
+                >
+                  Organize all your coding bookmarks in one place. Start free today.
+                </TextAnimate>
                 <button
                   onClick={handleGetStartedClick}
                   className="group mt-4 rounded-[2rem] px-6 inline-flex items-center gap-2 rounded-lg bg-primary hover:bg-primary/90 py-3 text-primary-foreground font-medium transition-colors"

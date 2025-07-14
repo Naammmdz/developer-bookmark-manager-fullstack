@@ -165,8 +165,8 @@ const Sidebar: React.FC = () => {
             const data = collectionData[sColl.id];
             if (!data) return null; // Skip if data for this static collection isn't in collectionData
             
-            // Check if this is a user-created collection (has numeric ID from Date.now())
-            const isUserCollection = typeof sColl.id === 'number' && sColl.id > 1000000000000; // Timestamp check
+            // Check if this collection can be deleted (not a default collection)
+            const isDeletable = !sColl.isDefault;
             
             return (
               <SidebarItem
@@ -179,7 +179,7 @@ const Sidebar: React.FC = () => {
                 onClick={() => setActiveCollection(sColl.id.toString())}
                 isStaticCollection={true} // For staggered animation
                 itemIndex={index} // Pass the index as itemIndex
-                isDeletable={isUserCollection} // Only user collections can be deleted
+                isDeletable={isDeletable} // Use isDefault property to determine if deletable
                 onDelete={() => deleteCollection(sColl.id.toString())}
               />
             );
