@@ -9,7 +9,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,7 +50,7 @@ public class User implements UserDetails {
     private List<Bookmark> bookmarks;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Collection> collections;
+    private List<com.g1.bookmark_manager.entity.Collection> collections;
     
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -73,7 +72,7 @@ public class User implements UserDetails {
     }
     
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public java.util.Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
                 .collect(Collectors.toList());
