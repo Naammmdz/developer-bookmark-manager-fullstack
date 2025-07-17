@@ -1,32 +1,35 @@
-import React, { useState, useMemo } from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+
+import React, { useState, useMemo, useRef } from 'react';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import {
   BookmarkProvider,
   useBookmarks,
   CollectionWithItems,
-} from "./context/BookmarkContext";
-import { useAuth } from "./context/AuthContext";
+} from './context/BookmarkContext';
+import { useAuth } from './context/AuthContext';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
-import ProfilePage from "./pages/ProfilePage";
-import LandingPage from "./pages/LandingPage";
-import AdminPage from "./pages/AdminPage";
-import Header from "./components/layout/Header";
-import { useRecentlyAccessed } from "./hooks/useRecentlyAccessed";
-import Sidebar from "./components/layout/Sidebar";
-import BookmarkGrid from "./components/bookmark/BookmarkGrid";
+import ProfilePage from './pages/ProfilePage';
+import LandingPage from './pages/LandingPage';
+import AdminPage from './pages/AdminPage';
+import Header from './components/layout/Header';
+import { useRecentlyAccessed } from './hooks/useRecentlyAccessed';
+import Sidebar from './components/layout/Sidebar';
+import BookmarkGrid from './components/bookmark/BookmarkGrid';
 // CollectionHeader removed as it's no longer used in BookmarksViewWithSidebar
-import MobileNavigation from "./components/layout/MobileNavigation";
-import AddBookmarkModal from "./components/bookmark/AddBookmarkModal";
-import AddCollectionModal from "./components/collection/AddCollectionModal"; // Import AddCollectionModal
-import LoginModal from "./components/auth/LoginModal";
-import RegisterModal from "./components/auth/RegisterModal";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import RootRoute from "./components/auth/RootRoute";
-import AdminLayout from "./components/admin/AdminLayout";
-import SettingsModal from "./components/settings/SettingsModal";
-import BackgroundAnimation from "./components/layout/BackgroundAnimation";
-import KeyboardShortcutsButton from "./components/ui/KeyboardShortcutsButton";
-import { CustomIcon } from "./utils/iconMapping";
+import MobileNavigation from './components/layout/MobileNavigation';
+import AddBookmarkModal from './components/bookmark/AddBookmarkModal';
+import AddCollectionModal from './components/collection/AddCollectionModal'; // Import AddCollectionModal
+import LoginModal from './components/auth/LoginModal';
+import RegisterModal from './components/auth/RegisterModal';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import RootRoute from './components/auth/RootRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import SettingsModal from './components/settings/SettingsModal';
+import BackgroundAnimation from './components/layout/BackgroundAnimation';
+import KeyboardShortcutsButton from './components/ui/KeyboardShortcutsButton';
+import { CustomIcon } from './utils/iconMapping';
+import { Pointer } from './components/magicui/pointer';
 import {
   Archive,
   FolderKanban,
@@ -61,6 +64,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     closeAddCollectionModal,
     addCollection,
   } = useBookmarks();
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Function to focus search input
+  const focusSearchInput = () => {
+    searchInputRef.current?.focus();
+  };
+
+  // Use keyboard shortcuts hook
+  useKeyboardShortcuts({
+    openSettingsModal,
+    focusSearchInput
+  });
 
   const stats = React.useMemo(() => {
     const cd = collectionData || {}; // Handle initial undefined state
@@ -100,6 +116,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             openLoginModal={openLoginModal}
             openRegisterModal={openRegisterModal}
             openSettingsModal={openSettingsModal}
+            searchInputRef={searchInputRef}
           />
         </header>
 
@@ -259,7 +276,7 @@ const BookmarksViewWithSidebar: React.FC = () => {
             {!searchTerm && (
               <button
                 onClick={openModal} // openModal from useBookmarks
-                className="bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-5 rounded-lg flex items-center mx-auto text-sm transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2.5 px-5 rounded-lg flex items-center mx-auto text-sm transition-colors"
               >
                 <ListPlus size={18} className="mr-2" /> Add Bookmark to "{name}"
               </button>
@@ -307,131 +324,86 @@ function App() {
   const closeSettingsModal = () => setIsSettingsModalOpen(false);
 
   return (
-    <BookmarkProvider>
-      {/* Modals are rendered here, outside of Routes, so they can be displayed over any page */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={closeLoginModal}
-        openRegisterModal={openRegisterModal}
-      />
-      <RegisterModal
-        isOpen={isRegisterModalOpen}
-        onClose={closeRegisterModal}
-        openLoginModal={openLoginModal}
-      />
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={closeSettingsModal}
-      />
+    <Pointer>
+      <BookmarkProvider>
+        {/* Modals are rendered here, outside of Routes, so they can be displayed over any page */}
+        <LoginModal 
+          isOpen={isLoginModalOpen} 
+          onClose={closeLoginModal} 
+          openRegisterModal={openRegisterModal}
+        />
+        <RegisterModal
+          isOpen={isRegisterModalOpen}
+          onClose={closeRegisterModal}
+          openLoginModal={openLoginModal}
+        />
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={closeSettingsModal}
+        />
 
-      <Routes>
-        {/* Root route - redirects based on authentication */}
-        <Route path="/" element={<RootRoute />} />
-
-        {/* Landing page without sidebar/layout */}
-        <Route path="/landing" element={<LandingPage />} />
-
-        {/* Protected app routes */}
-        <Route
-          path="/app"
-          element={
-            <ProtectedRoute>
-              <AppLayout
-                openLoginModal={openLoginModal}
-                openRegisterModal={openRegisterModal}
-                openSettingsModal={openSettingsModal}
-                openCollectionsModal={openCollectionsModal}
-              />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<BookmarksViewWithSidebar />} />
-          <Route path="profile" element={<ProfileView />} />
-          {/* Add other routes that use AppLayout here */}
-        </Route>
-
-        {/* Admin routes with AdminLayout */}
-        <Route
-          path="/app/admin"
-          element={
-            <ProtectedRoute>
-              {currentUser?.roles.includes("ROLE_ADMIN") ? (
-                <AdminLayout
+        <Routes>
+          {/* Root route - redirects based on authentication */}
+          <Route path="/" element={<RootRoute />} />
+          
+          {/* Landing page without sidebar/layout */}
+          <Route path="/landing" element={<LandingPage />} />
+          
+          {/* Protected app routes */}
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
+                <AppLayout
                   openLoginModal={openLoginModal}
                   openRegisterModal={openRegisterModal}
                   openSettingsModal={openSettingsModal}
                   openCollectionsModal={openCollectionsModal}
                 />
-              ) : (
-                <Navigate to="/app" replace />
-              )}
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<AdminPage />} />
-          <Route path="users" element={<AdminPage />} />
-          <Route
-            path="roles"
-            element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-white mb-4">
-                  Roles & Permissions
-                </h1>
-                <p className="text-white/70">This feature is coming soon...</p>
-              </div>
+              </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<BookmarksViewWithSidebar />} />
+            <Route
+              path="profile"
+              element={<ProfileView />}
+            />
+            {/* Add other routes that use AppLayout here */}
+          </Route>
+          
+          {/* Admin routes with AdminLayout */}
           <Route
-            path="analytics"
+            path="/app/admin"
             element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-white mb-4">
-                  Analytics
-                </h1>
-                <p className="text-white/70">This feature is coming soon...</p>
-              </div>
+              <ProtectedRoute>
+                {currentUser?.role === 'admin' ? (
+                  <AdminLayout
+                    openLoginModal={openLoginModal}
+                    openRegisterModal={openRegisterModal}
+                    openSettingsModal={openSettingsModal}
+                    openCollectionsModal={openCollectionsModal}
+                  />
+                ) : (
+                  <Navigate to="/app" replace />
+                )}
+              </ProtectedRoute>
             }
-          />
-          <Route
-            path="system"
-            element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-white mb-4">
-                  System Status
-                </h1>
-                <p className="text-white/70">This feature is coming soon...</p>
-              </div>
-            }
-          />
-          <Route
-            path="logs"
-            element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-white mb-4">
-                  System Logs
-                </h1>
-                <p className="text-white/70">This feature is coming soon...</p>
-              </div>
-            }
-          />
-          <Route
-            path="settings"
-            element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-white mb-4">
-                  Admin Settings
-                </h1>
-                <p className="text-white/70">This feature is coming soon...</p>
-              </div>
-            }
-          />
-        </Route>
-
-        {/* Fallback for unmatched routes */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      {/* KeyboardShortcutsButton removed from here, now in AppLayout */}
-    </BookmarkProvider>
+          >
+            <Route index element={<AdminPage />} />
+            <Route path="users" element={<AdminPage />} />
+            <Route path="roles" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Roles & Permissions</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+            <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Analytics</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+            <Route path="system" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Status</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+            <Route path="logs" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Logs</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+            <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Admin Settings</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          </Route>
+          
+          {/* Fallback for unmatched routes */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        {/* KeyboardShortcutsButton removed from here, now in AppLayout */}
+      </BookmarkProvider>
+    </Pointer>
   );
 }
 

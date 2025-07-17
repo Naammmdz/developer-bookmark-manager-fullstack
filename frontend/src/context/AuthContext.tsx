@@ -1,17 +1,9 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import {
-  login as apiLogin,
-  register as apiRegister,
-  logout as apiLogout,
-  fetchCurrentUser,
-} from "../api/authApi";
-import { User } from "../types";
-import { handleAuthError } from "../utils/errorHandler";
-import {
-  getUserRolesFromToken,
-  getUserInfoFromToken,
-  isTokenExpired,
-} from "../utils/jwtUtils";
+
+import { createContext, useContext, useEffect, useState } from 'react';
+import { login as apiLogin, register as apiRegister, logout as apiLogout, fetchCurrentUser } from '../api/authApi';
+import { User } from '../types';
+import { handleAuthError } from '../utils/errorHandler';
+import { getUserRolesFromToken, isTokenExpired } from '../utils/jwtUtils';
 
 interface AuthContextType {
   user: User | null;
@@ -72,11 +64,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             username: freshUserData.username,
             email: freshUserData.email,
             fullName: freshUserData.fullName,
-            avatarUrl: null, // Will be updated when user updates profile
-            roles: roles,
+            avatarUrl: null,
+            role: roles.includes('ROLE_ADMIN') ? 'admin' : 'user',
             active: true,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           };
           localStorage.setItem("user", JSON.stringify(userData));
           setUser(userData);
@@ -113,10 +105,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: response.email,
         fullName: response.fullName,
         avatarUrl: null,
-        roles: roles,
+        role: roles.includes('ROLE_ADMIN') ? 'admin' : 'user',
         active: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
       // Store user data in localStorage for persistence
@@ -155,10 +147,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: response.email,
         fullName: response.fullName,
         avatarUrl: null,
-        roles: roles,
+        role: roles.includes('ROLE_ADMIN') ? 'admin' : 'user',
         active: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
       // Store user data in localStorage for persistence

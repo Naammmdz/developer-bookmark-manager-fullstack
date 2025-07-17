@@ -7,11 +7,10 @@ interface KeyboardShortcutsModalProps {
 }
 
 const shortcuts = [
-  { keys: 'Ctrl + N', action: 'Add new bookmark' },
-  { keys: 'Ctrl + F', action: 'Focus search' },
-  { keys: 'Ctrl + Shift + B', action: 'Open bookmarks' },
-  { keys: 'Esc', action: 'Close modals/popups' },
-  // Add more as needed
+  { keys: 'Ctrl + Shift + A', action: 'Add new bookmark' },
+  { keys: 'Ctrl + F', action: 'Focus search bar' },
+  { keys: 'Ctrl + ,', action: 'Open settings' },
+  { keys: 'Esc', action: 'Close modals/popups' }
 ];
 
 const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ onClose }) => {

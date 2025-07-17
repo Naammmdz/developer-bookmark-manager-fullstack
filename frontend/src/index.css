@@ -131,6 +131,20 @@ input:-webkit-autofill:focus {
   }
 }
 
+/* RetroGrid animation */
+@keyframes grid {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-grid {
+  animation: grid 15s linear infinite;
+}
+
 .sidebar {
   position: fixed !important;
   left: 0 !important;
@@ -161,4 +175,31 @@ input:-webkit-autofill:focus {
   min-height: 100vh !important; /* Ensure it takes full height */
   display: flex !important;
   flex-direction: column !important;
+}
+
+/* Custom cursor styles */
+.custom-cursor {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23ff6b6b" stroke="%23ffffff" stroke-width="1"/></svg>'), auto;
+}
+
+.custom-cursor:hover {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%234ecdc4" stroke="%23ffffff" stroke-width="1"/></svg>'), auto;
+}
+
+/* Different cursor types with custom colors */
+.custom-cursor button {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23a8e6cf" stroke="%23ffffff" stroke-width="1"/></svg>'), pointer;
+}
+
+.custom-cursor a {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23ffd93d" stroke="%23ffffff" stroke-width="1"/></svg>'), pointer;
+}
+
+.custom-cursor input,
+.custom-cursor textarea {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2" height="20" viewBox="0 0 2 20"><rect width="2" height="20" fill="%23ff6b6b"/></svg>'), text;
+}
+
+.custom-cursor select {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23ba68c8" stroke="%23ffffff" stroke-width="1"/></svg>'), pointer;
 }

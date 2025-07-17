@@ -16,6 +16,7 @@ export interface Collection {
   name: string;
   icon: string;
   count: number;
+  isDefault?: boolean;
 }
 
 export interface User {

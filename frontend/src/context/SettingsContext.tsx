@@ -48,6 +48,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   }, [selectedBackground]);
 
   const setSelectedBackground = (backgroundKey: string) => {
+    console.log('SettingsContext - Setting background to:', backgroundKey);
     // Add validation here if backgroundKey should be one of a predefined set
     setSelectedBackgroundState(backgroundKey);
   };

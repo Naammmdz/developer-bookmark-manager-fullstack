@@ -1,25 +1,21 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useBookmarks } from "../../context/BookmarkContext";
-import { useAuth } from "../../context/AuthContext";
-import { Bookmark, ListPlus, User, Search } from "lucide-react"; // Added new icons
-import { ShimmerButton } from "../ui/shimmer-button";
-import UserProfilePopup from "../auth/UserProfilePopup";
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useBookmarks } from '../../context/BookmarkContext';
+import { useAuth } from '../../context/AuthContext';
+import { Bookmark, ListPlus, User, Search } from 'lucide-react'; // Added new icons
+import { ShimmerButton } from '../ui/shimmer-button';
 
 interface HeaderProps {
   openLoginModal: () => void;
   openRegisterModal: () => void;
   openSettingsModal: () => void;
+  searchInputRef?: React.RefObject<HTMLInputElement>;
 }
 
-const Header: React.FC<HeaderProps> = ({
-  openLoginModal,
-  openRegisterModal,
-  openSettingsModal,
-}) => {
+const Header: React.FC<HeaderProps> = ({ openLoginModal, openRegisterModal, openSettingsModal, searchInputRef }) => {
   const { searchTerm, setSearchTerm, openModal } = useBookmarks();
   const { user: currentUser } = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value); // setSearchTerm is from useBookmarks context
@@ -27,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleProfileClick = () => {
     if (currentUser) {
-      setIsProfileOpen(true);
+      openSettingsModal(); // Open the settings modal instead of profile popup
     } else {
       openLoginModal();
     }
@@ -53,6 +49,7 @@ const Header: React.FC<HeaderProps> = ({
           <Search size={18} className="text-white/40" />
         </div>
         <input
+          ref={searchInputRef}
           type="search"
           placeholder="Search"
           value={searchTerm}
@@ -87,10 +84,6 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </button>
       </div>
-      {/* User Profile Popup */}
-      {isProfileOpen && (
-        <UserProfilePopup onClose={() => setIsProfileOpen(false)} />
-      )}
     </div>
   );
 };

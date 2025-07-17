@@ -43,7 +43,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/me")
+    @PostMapping("/me/{token}")
     @Operation(summary = "Get current user details")
     public ResponseEntity<AuthResponse> getCurrentUser(Authentication authentication) {
         String username = authentication.getName();
