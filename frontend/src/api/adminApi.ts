@@ -8,23 +8,23 @@ export interface UserWithStats extends User {
 }
 
 export interface UserFilters {
-  role?: 'user' | 'admin' | 'all';
-  status?: 'active' | 'inactive' | 'all';
+  role?: "user" | "admin" | "all";
+  status?: "active" | "inactive" | "all";
   search?: string;
 }
 
 export interface UserUpdateData {
   name?: string;
   email?: string;
-  role?: 'user' | 'admin';
+  role?: "user" | "admin";
   isActive?: boolean;
 }
 
 // Get all users (matches backend /api/admin/users endpoint)
 export const getUsers = async (): Promise<User[]> => {
   try {
-    const { data } = await api.get('/admin/users');
-    
+    const { data } = await api.get("/admin/users");
+
     // Map backend user structure to frontend User interface
     const mappedUsers = data.map((backendUser: any) => ({
       id: backendUser.id,
@@ -35,48 +35,48 @@ export const getUsers = async (): Promise<User[]> => {
       roles: backendUser.roles || [],
       active: backendUser.active,
       createdAt: backendUser.createdAt,
-      updatedAt: backendUser.updatedAt
+      updatedAt: backendUser.updatedAt,
     }));
-    
-    console.log('Mapped users:', mappedUsers);
+
+    console.log("Mapped users:", mappedUsers);
     return mappedUsers;
   } catch (error) {
-    console.warn('Users endpoint not available, using fallback data:', error);
+    console.warn("Users endpoint not available, using fallback data:", error);
     // Return mock data if endpoint doesn't exist
     return [
       {
         id: 1,
-        username: 'admin',
-        email: 'admin@example.com',
-        fullName: 'Admin User',
+        username: "admin",
+        email: "admin@example.com",
+        fullName: "Admin User",
         avatarUrl: null,
-        roles: ['USER', 'ADMIN'],
+        roles: ["USER", "ADMIN"],
         active: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 2,
-        username: 'user1',
-        email: 'user1@example.com',
-        fullName: 'Test User 1',
+        username: "user1",
+        email: "user1@example.com",
+        fullName: "Test User 1",
         avatarUrl: null,
-        roles: ['USER'],
+        roles: ["USER"],
         active: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 3,
-        username: 'user2',
-        email: 'user2@example.com',
-        fullName: 'Test User 2',
+        username: "user2",
+        email: "user2@example.com",
+        fullName: "Test User 2",
         avatarUrl: null,
-        roles: ['USER'],
+        roles: ["USER"],
         active: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
+        updatedAt: new Date().toISOString(),
+      },
     ];
   }
 };
@@ -85,8 +85,8 @@ export const getUsers = async (): Promise<User[]> => {
 export const createUser = async (userData: RegisterData): Promise<User> => {
   try {
     // Call the register endpoint
-    const { data } = await api.post('/auth/register', userData);
-    
+    const { data } = await api.post("/api/auth/register", userData);
+
     // Map the response to User interface (excluding JWT token)
     const newUser: User = {
       id: data.id || 0, // Will be set by backend
@@ -94,15 +94,15 @@ export const createUser = async (userData: RegisterData): Promise<User> => {
       email: userData.email,
       fullName: userData.fullName,
       avatarUrl: null,
-      roles: ['USER'], // Default role
+      roles: ["USER"], // Default role
       active: true, // Default active status
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-    
+
     return newUser;
   } catch (error) {
-    console.error('Failed to create user:', error);
+    console.error("Failed to create user:", error);
     throw error;
   }
 };
@@ -110,11 +110,11 @@ export const createUser = async (userData: RegisterData): Promise<User> => {
 // Get admin dashboard (matches backend /api/admin/dashboard endpoint)
 export const getDashboard = async (): Promise<string> => {
   try {
-    const { data } = await api.get('/admin/dashboard');
+    const { data } = await api.get("/admin/dashboard");
     return data;
   } catch (error) {
-    console.warn('Admin dashboard endpoint not available:', error);
-    return 'Welcome to the admin dashboard! System is running smoothly.';
+    console.warn("Admin dashboard endpoint not available:", error);
+    return "Welcome to the admin dashboard! System is running smoothly.";
   }
 };
 
@@ -126,7 +126,7 @@ export const getUserStats = async (): Promise<{
   adminUsers: number;
   newUsersThisMonth: number;
 }> => {
-  const { data } = await api.get('/admin/users/stats');
+  const { data } = await api.get("/admin/users/stats");
   return data;
 };
 
@@ -145,7 +145,7 @@ export const deleteUser = async (userId: number): Promise<string> => {
     const { data } = await api.delete(`/admin/users/${userId}`);
     return data;
   } catch (error) {
-    console.warn('Delete user endpoint not available:', error);
+    console.warn("Delete user endpoint not available:", error);
     return `User ${userId} deleted successfully (simulated).`;
   }
 };
@@ -157,7 +157,9 @@ export const toggleUserStatus = async (userId: number): Promise<User> => {
 };
 
 // Get user details with full information
-export const getUserDetails = async (userId: number): Promise<{
+export const getUserDetails = async (
+  userId: number
+): Promise<{
   user: UserWithStats;
   recentBookmarks: any[];
   recentCollections: any[];
@@ -170,16 +172,16 @@ export const getUserDetails = async (userId: number): Promise<{
 // Bulk actions
 export const bulkUpdateUsers = async (
   userIds: number[],
-  updateData: Pick<UserUpdateData, 'role' | 'isActive'>
+  updateData: Pick<UserUpdateData, "role" | "isActive">
 ): Promise<void> => {
-  await api.post('/admin/users/bulk-update', {
+  await api.post("/admin/users/bulk-update", {
     userIds,
-    updateData
+    updateData,
   });
 };
 
 export const bulkDeleteUsers = async (userIds: number[]): Promise<void> => {
-  await api.post('/admin/users/bulk-delete', { userIds });
+  await api.post("/admin/users/bulk-delete", { userIds });
 };
 
 // Send notification to users
@@ -188,11 +190,11 @@ export const sendNotification = async (
   notification: {
     title: string;
     message: string;
-    type: 'info' | 'warning' | 'success' | 'error';
+    type: "info" | "warning" | "success" | "error";
   }
 ): Promise<void> => {
-  await api.post('/admin/users/send-notification', {
+  await api.post("/admin/users/send-notification", {
     userIds,
-    notification
+    notification,
   });
 };

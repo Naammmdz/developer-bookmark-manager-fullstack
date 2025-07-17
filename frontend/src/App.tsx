@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import {
@@ -40,8 +41,7 @@ import {
   ListPlus,
   Grid,
   List,
-} from 'lucide-react';
-
+} from "lucide-react";
 
 // Props for AppLayout
 interface AppLayoutProps {
@@ -62,7 +62,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     collectionData,
     isAddCollectionModalOpen, // Destructure new state and functions
     closeAddCollectionModal,
-    addCollection
+    addCollection,
   } = useBookmarks();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -84,13 +84,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     const totalBookmarksStat = cd.all?.count || 0;
 
     const collectionsStat = Object.values(
-      cd as { [key: string]: CollectionWithItems },
+      cd as { [key: string]: CollectionWithItems }
     ) // Type assertion for filter
       .filter(
         (col) =>
-          col.id !== 'all' &&
-          col.id !== 'favorites' &&
-          col.id !== 'recently_added',
+          col.id !== "all" &&
+          col.id !== "favorites" &&
+          col.id !== "recently_added"
       ).length;
 
     const favoritesStat = cd.favorites?.count || 0;
@@ -120,10 +120,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           />
         </header>
 
-
         {/* Outlet for child route components */}
         <main className="p-6 flex-1 overflow-y-auto">
-          <Outlet /> {/* BookmarksViewWithSidebar or ProfileView will render here */}
+          <Outlet />{" "}
+          {/* BookmarksViewWithSidebar or ProfileView will render here */}
         </main>
       </div>
 
@@ -165,16 +165,16 @@ const BookmarksViewWithSidebar: React.FC = () => {
   } = useBookmarks();
 
   const { recentlyAccessed, addRecentlyAccessed } = useRecentlyAccessed();
-  
+
   // Get recent bookmarks for the "Recently Accessed" section
   const displayRecentBookmarks = recentlyAccessed.slice(0, 5);
   const currentViewData = collectionData?.[activeCollection];
-  const icon = currentViewData?.icon || 'folder';
-  const name = currentViewData?.name || 'Loading...';
+  const icon = currentViewData?.icon || "folder";
+  const name = currentViewData?.name || "Loading...";
 
   const baseItems = currentViewData?.items || [];
   const finalItemsToDisplay =
-    searchTerm.trim() === ''
+    searchTerm.trim() === ""
       ? baseItems
       : baseItems.filter((bookmark) => {
           const searchTermLower = searchTerm.toLowerCase();
@@ -183,7 +183,7 @@ const BookmarksViewWithSidebar: React.FC = () => {
             (bookmark.description &&
               bookmark.description.toLowerCase().includes(searchTermLower)) ||
             bookmark.tags.some((tag) =>
-              tag.toLowerCase().includes(searchTermLower),
+              tag.toLowerCase().includes(searchTermLower)
             )
           );
         });
@@ -211,24 +211,24 @@ const BookmarksViewWithSidebar: React.FC = () => {
             <button className="flex items-center gap-2 px-3 py-1.5 bg-black/20 hover:bg-black/30 border border-white/10 rounded-md text-sm text-white/90 transition-colors">
               <ArrowUpDown size={16} /> Sort
             </button>
-            <button 
-              onClick={() => setViewMode('grid')}
+            <button
+              onClick={() => setViewMode("grid")}
               className={`p-2 border border-white/10 rounded-md transition-colors ${
-                viewMode === 'grid' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-black/20 hover:bg-black/30 text-white/90'
-              }`} 
+                viewMode === "grid"
+                  ? "bg-white/20 text-white"
+                  : "bg-black/20 hover:bg-black/30 text-white/90"
+              }`}
               title="Grid View"
             >
               <Grid size={16} />
             </button>
-            <button 
-              onClick={() => setViewMode('list')}
+            <button
+              onClick={() => setViewMode("list")}
               className={`p-2 border border-white/10 rounded-md transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-black/20 hover:bg-black/30 text-white/90'
-              }`} 
+                viewMode === "list"
+                  ? "bg-white/20 text-white"
+                  : "bg-black/20 hover:bg-black/30 text-white/90"
+              }`}
               title="List View"
             >
               <List size={16} />
@@ -245,10 +245,10 @@ const BookmarksViewWithSidebar: React.FC = () => {
               Recently Accessed
             </div>
             {displayRecentBookmarks.map((bookmark) => (
-              <span 
-                key={bookmark.id} 
+              <span
+                key={bookmark.id}
                 className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm whitespace-nowrap cursor-pointer hover:bg-white/20 transition-colors"
-                onClick={() => window.open(bookmark.url, '_blank')}
+                onClick={() => window.open(bookmark.url, "_blank")}
                 title={bookmark.url}
               >
                 {bookmark.title}
@@ -265,8 +265,8 @@ const BookmarksViewWithSidebar: React.FC = () => {
             <PlusCircle size={48} className="mx-auto text-white/30 mb-4" />
             <h3 className="text-xl font-semibold text-white/80 mb-2">
               {searchTerm
-                ? 'No Bookmarks Match Your Search'
-                : 'This Collection is Empty'}
+                ? "No Bookmarks Match Your Search"
+                : "This Collection is Empty"}
             </h3>
             <p className="text-white/50 mb-6 max-w-md">
               {searchTerm

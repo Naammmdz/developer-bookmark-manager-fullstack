@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { login as apiLogin, register as apiRegister, logout as apiLogout, fetchCurrentUser } from '../api/authApi';
 import { User } from '../types';
@@ -7,8 +8,14 @@ import { getUserRolesFromToken, isTokenExpired } from '../utils/jwtUtils';
 interface AuthContextType {
   user: User | null;
   userRoles: string[];
+  setUser: (user: User | null) => void;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string, fullName: string) => Promise<void>;
+  register: (
+    username: string,
+    email: string,
+    password: string,
+    fullName: string
+  ) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -23,14 +30,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Kiểm tra token khi app khởi động
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
       if (token && storedUser) {
         // Check if token is expired
         if (isTokenExpired(token)) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
           setIsLoading(false);
           return;
         }
@@ -44,11 +51,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const userData = JSON.parse(storedUser);
           setUser(userData);
         } catch (error) {
-          console.error('Failed to parse stored user data:', error);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          console.error("Failed to parse stored user data:", error);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
         }
-        
+
         // Fetch fresh user data from /me endpoint (optional)
         try {
           const freshUserData = await fetchCurrentUser();
@@ -63,10 +70,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           };
-          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem("user", JSON.stringify(userData));
           setUser(userData);
         } catch (error) {
-          console.warn('Failed to fetch fresh user data from /me endpoint:', error);
+          console.warn(
+            "Failed to fetch fresh user data from /me endpoint:",
+            error
+          );
           // Continue with stored user data if /me endpoint fails
         }
 
@@ -82,12 +92,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (username: string, password: string) => {
     try {
       const response = await apiLogin({ username, password });
-      localStorage.setItem('token', response.token);
-      
+      localStorage.setItem("token", response.token);
+
       // Extract roles from JWT
       const roles = getUserRolesFromToken(response.token);
       setUserRoles(roles);
-      
+
       // Create user object from AuthResponse
       const userData: User = {
         id: 0, // Will be set by backend when fetching full user data
@@ -100,26 +110,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
+
       // Store user data in localStorage for persistence
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
     } catch (err) {
       const errorMessage = handleAuthError(err);
-      console.error('Login failed:', errorMessage);
+      console.error("Login failed:", errorMessage);
       throw new Error(errorMessage);
     }
   };
 
-  const register = async (username: string, email: string, password: string, fullName: string) => {
+  const register = async (
+    username: string,
+    email: string,
+    password: string,
+    fullName: string
+  ) => {
     try {
-      const response = await apiRegister({ username, email, password, fullName });
-      localStorage.setItem('token', response.token);
-      
+      const response = await apiRegister({
+        username,
+        email,
+        password,
+        fullName,
+      });
+      localStorage.setItem("token", response.token);
+
       // Extract roles from JWT
       const roles = getUserRolesFromToken(response.token);
       setUserRoles(roles);
-      
+
       // Create user object from AuthResponse
       const userData: User = {
         id: 0, // Will be set by backend when fetching full user data
@@ -132,35 +152,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
+
       // Store user data in localStorage for persistence
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
     } catch (err) {
       const errorMessage = handleAuthError(err);
-      console.error('Registration failed:', errorMessage);
+      console.error("Registration failed:", errorMessage);
       throw new Error(errorMessage);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('demo-admin');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("demo-admin");
     setUser(null);
     setUserRoles([]);
     apiLogout().catch(console.error);
   };
 
-return (
-  <AuthContext.Provider value={{ user, userRoles, login, register, logout, isLoading }}>
-    {children}
-  </AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{ user, userRoles, setUser, login, register, logout, isLoading }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
