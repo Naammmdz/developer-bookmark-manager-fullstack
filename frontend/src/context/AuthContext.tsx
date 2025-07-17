@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { login as apiLogin, register as apiRegister, logout as apiLogout, fetchCurrentUser } from '../api/authApi';
+import { login as apiLogin, register as apiRegister, logout as apiLogout, fetchCurrentUser, updateProfile as apiUpdateProfile, changePassword as apiChangePassword, UpdateUserRequest, ChangePasswordRequest } from '../api/authApi';
 import { User } from '../types';
 import { handleAuthError } from '../utils/errorHandler';
 import { getUserRolesFromToken, isTokenExpired } from '../utils/jwtUtils';
@@ -10,6 +10,8 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string, fullName: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (request: UpdateUserRequest) => Promise<void>;
+  changePassword: (request: ChangePasswordRequest) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -152,8 +154,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     apiLogout().catch(console.error);
   };
 
+  const updateProfile = async (request: UpdateUserRequest) => {
+    try {
+      const response = await apiUpdateProfile(request);
+      
+      // Update token with new information
+      localStorage.setItem('token', response.token);
+      
+      // Extract roles from JWT
+      const roles = getUserRolesFromToken(response.token);
+      setUserRoles(roles);
+      
+      // Update user data
+      const userData: User = {
+        id: user?.id || 0,
+        username: response.username,
+        email: response.email,
+        fullName: response.fullName,
+        avatarUrl: user?.avatarUrl || null,
+        role: roles.includes('ROLE_ADMIN') ? 'admin' : 'user',
+        active: true,
+        createdAt: user?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Store updated user data in localStorage
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    } catch (err) {
+      const errorMessage = handleAuthError(err);
+      console.error('Profile update failed:', errorMessage);
+      throw new Error(errorMessage);
+    }
+  };
+
+  const changePassword = async (request: ChangePasswordRequest) => {
+    try {
+      await apiChangePassword(request);
+      // Password change successful - no need to update user data
+    } catch (err) {
+      const errorMessage = handleAuthError(err);
+      console.error('Password change failed:', errorMessage);
+      throw new Error(errorMessage);
+    }
+  };
+
 return (
-  <AuthContext.Provider value={{ user, userRoles, login, register, logout, isLoading }}>
+  <AuthContext.Provider value={{ user, userRoles, login, register, logout, updateProfile, changePassword, isLoading }}>
     {children}
   </AuthContext.Provider>
   );

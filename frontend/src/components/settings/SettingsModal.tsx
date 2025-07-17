@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { X, User, Mail, LogOut, Info } from 'lucide-react';
+import { X, User, Mail, LogOut, Info, Lock } from 'lucide-react';
+import ProfileTab from './ProfileTab';
+import PasswordTab from './PasswordTab';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -11,7 +13,7 @@ interface SettingsModalProps {
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('Account');
+  const [activeTab, setActiveTab] = useState('Profile');
 
   if (!isOpen) return null;
 
@@ -112,8 +114,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'Account':
-        return renderAccountTab();
+      case 'Profile':
+        return <ProfileTab onClose={onClose} />;
+      case 'Password':
+        return <PasswordTab />;
       case 'About':
         return renderAboutTab();
       default:
@@ -133,13 +137,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex space-x-4">
             <button
-              onClick={() => setActiveTab('Account')}
+              onClick={() => setActiveTab('Profile')}
               className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'Account' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
+                activeTab === 'Profile' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
               }`}
             >
               <User size={16} />
-              Account
+              Profile
+            </button>
+            <button
+              onClick={() => setActiveTab('Password')}
+              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'Password' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
+              }`}
+            >
+              <Lock size={16} />
+              Password
             </button>
             <button
               onClick={() => setActiveTab('About')}
