@@ -7,6 +7,11 @@ import com.g1.bookmark_manager.entity.User;
 import com.g1.bookmark_manager.exception.ResourceNotFoundException;
 import com.g1.bookmark_manager.repository.BookmarkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,29 +40,29 @@ public class BookmarkService {
         User user = authService.findByUsername(username);
         Bookmark bookmark = bookmarkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bookmark not found with id: " + id));
-        
+
         if (!bookmark.getUser().equals(user)) {
             throw new ResourceNotFoundException("Bookmark not found or access denied");
         }
-        
+
         return convertToResponse(bookmark);
     }
 
     public BookmarkResponse createBookmark(BookmarkRequest request, String username) {
         User user = authService.findByUsername(username);
-        
+
         Bookmark bookmark = new Bookmark();
         bookmark.setTitle(request.getTitle());
         bookmark.setUrl(request.getUrl());
         bookmark.setDescription(request.getDescription());
-bookmark.setCollection(request.getCollection());
-bookmark.setTags(request.getTags());
-bookmark.setIsFavorite(request.getIsFavorite());
-bookmark.setIsPublic(request.getIsPublic());
-bookmark.setFavicon(request.getFavicon());
-bookmark.setUser(user);
+        bookmark.setCollection(request.getCollection());
+        bookmark.setTags(request.getTags());
+        bookmark.setIsFavorite(request.getIsFavorite());
+        bookmark.setIsPublic(request.getIsPublic());
+        bookmark.setFavicon(request.getFavicon());
+        bookmark.setUser(user);
 
-bookmark = bookmarkRepository.save(bookmark);
+        bookmark = bookmarkRepository.save(bookmark);
         return convertToResponse(bookmark);
     }
 
@@ -65,20 +70,20 @@ bookmark = bookmarkRepository.save(bookmark);
         User user = authService.findByUsername(username);
         Bookmark bookmark = bookmarkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bookmark not found with id: " + id));
-        
+
         if (!bookmark.getUser().equals(user)) {
             throw new ResourceNotFoundException("Bookmark not found or access denied");
         }
-        
+
         bookmark.setTitle(request.getTitle());
         bookmark.setUrl(request.getUrl());
         bookmark.setDescription(request.getDescription());
-bookmark.setCollection(request.getCollection());
-bookmark.setTags(request.getTags());
-bookmark.setIsFavorite(request.getIsFavorite());
-bookmark.setIsPublic(request.getIsPublic());
-bookmark.setFavicon(request.getFavicon());
-        
+        bookmark.setCollection(request.getCollection());
+        bookmark.setTags(request.getTags());
+        bookmark.setIsFavorite(request.getIsFavorite());
+        bookmark.setIsPublic(request.getIsPublic());
+        bookmark.setFavicon(request.getFavicon());
+
         bookmark = bookmarkRepository.save(bookmark);
         return convertToResponse(bookmark);
     }
@@ -87,11 +92,11 @@ bookmark.setFavicon(request.getFavicon());
         User user = authService.findByUsername(username);
         Bookmark bookmark = bookmarkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bookmark not found with id: " + id));
-        
+
         if (!bookmark.getUser().equals(user)) {
             throw new ResourceNotFoundException("Bookmark not found or access denied");
         }
-        
+
         bookmarkRepository.delete(bookmark);
     }
 
@@ -99,16 +104,16 @@ bookmark.setFavicon(request.getFavicon());
         User user = authService.findByUsername(username);
         Bookmark bookmark = bookmarkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bookmark not found with id: " + id));
-        
+
         if (!bookmark.getUser().equals(user)) {
             throw new ResourceNotFoundException("Bookmark not found or access denied");
         }
-        
+
         // Apply partial updates
         for (Map.Entry<String, Object> entry : updates.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            
+
             switch (key) {
                 case "isFavorite":
                     bookmark.setIsFavorite((Boolean) value);
@@ -133,7 +138,7 @@ bookmark.setFavicon(request.getFavicon());
                     break;
             }
         }
-        
+
         bookmark = bookmarkRepository.save(bookmark);
         return convertToResponse(bookmark);
     }
@@ -190,20 +195,65 @@ bookmark.setFavicon(request.getFavicon());
         return bookmarkRepository.findDistinctCollectionsByUser(user);
     }
 
-private BookmarkResponse convertToResponse(Bookmark bookmark) {
-    return new BookmarkResponse(
-            bookmark.getId(),
-            bookmark.getTitle(),
-            bookmark.getUrl(),
-            bookmark.getDescription(),
-            bookmark.getCollection(),
-            bookmark.getTags(),
-            bookmark.getIsFavorite(),
-            bookmark.getIsPublic(),
-            bookmark.getFavicon(),
-            bookmark.getCreatedAt(),
-            bookmark.getUpdatedAt(),
-            bookmark.getUser().getUsername()
-    );
-}
+    private BookmarkResponse convertToResponse(Bookmark bookmark) {
+        return new BookmarkResponse(
+                bookmark.getId(),
+                bookmark.getTitle(),
+                bookmark.getUrl(),
+                bookmark.getDescription(),
+                bookmark.getCollection(),
+                bookmark.getTags(),
+                bookmark.getIsFavorite(),
+                bookmark.getIsPublic(),
+                bookmark.getFavicon(),
+                bookmark.getCreatedAt(),
+                bookmark.getUpdatedAt(),
+                bookmark.getUser().getUsername()
+        );
+    }
+
+    public List<BookmarkResponse> filterBookmarks(String title, String url, Boolean isFavorite, String tag, String sortBy, String username) {
+        User user = authService.findByUsername(username);
+        
+        Specification<Bookmark> spec = (root, query, cb) -> cb.equal(root.get("user"), user);
+        // Đoạn code trên tạo một Specification cơ bản với điều kiện user.
+        if (title != null && !title.isEmpty()) {
+            spec = spec.and(((root, query, cb)
+                    -> cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%")));
+        }
+        if (url != null && !url.isEmpty()) {
+            spec = spec.and(((root, query, cb)
+                    -> cb.like(cb.lower(root.get("url")), "%" + url.toLowerCase() + "%")));
+        }
+        if (isFavorite != null) {
+            spec = spec.and(((root, query, cb)
+                    -> cb.equal(root.get("isFavorite"), isFavorite)));
+        }
+        if (tag != null && !tag.isEmpty()) {
+            spec = spec.and(((root, query, cb)
+                    -> cb.isMember(tag, root.get("tags"))));
+        }
+        
+        // Default sortBy if not provided
+        if (sortBy == null || sortBy.isEmpty()) {
+            sortBy = "createdAt,desc";
+        }
+        
+        String[] sortDetails = sortBy.split(",");
+        String sortByProperty = sortDetails[0];
+        Sort.Direction sortDirection = Sort.Direction.ASC;
+        boolean isDescending = sortDetails.length > 1 && "desc".equalsIgnoreCase(sortDetails[1]);
+        if (isDescending) {
+            sortDirection = Sort.Direction.DESC;
+        }
+        Sort sort = Sort.by(sortDirection, sortByProperty);
+        List<Bookmark> bookmarks = bookmarkRepository.findAll(spec, sort);
+        return bookmarks
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+
+    }
+
+
 }
