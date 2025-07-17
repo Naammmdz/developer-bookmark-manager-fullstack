@@ -134,4 +134,19 @@ public class BookmarkController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getName();
     }
+
+    @GetMapping("/filterResult")
+    // (String title, String url, Boolean isFavorite, String tag, String sortBy)
+    @Operation(summary = "Filter bookmarks by various criteria")
+    public ResponseEntity<List<BookmarkResponse>> filterBookmarks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String url,
+            @RequestParam(required = false) Boolean isFavorite,
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String sortBy
+    ) {
+        String username = getCurrentUsername();
+        List<BookmarkResponse> bookmarks = bookmarkService.filterBookmarks(title, url, isFavorite, tag, sortBy, username);
+        return ResponseEntity.ok(bookmarks);
+    }
 }

@@ -19,6 +19,7 @@ import BookmarkGrid from './components/bookmark/BookmarkGrid';
 import MobileNavigation from './components/layout/MobileNavigation';
 import AddBookmarkModal from './components/bookmark/AddBookmarkModal';
 import AddCollectionModal from './components/collection/AddCollectionModal'; // Import AddCollectionModal
+import FilterModal from './components/filter/FilterModal';
 import LoginModal from './components/auth/LoginModal';
 import RegisterModal from './components/auth/RegisterModal';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -162,6 +163,12 @@ const BookmarksViewWithSidebar: React.FC = () => {
     deleteBookmarks, // Added for passing to BookmarkGrid
     viewMode,
     setViewMode,
+    // Filter functionality
+    activeFilters,
+    isFilterModalOpen,
+    openFilterModal,
+    closeFilterModal,
+    applyFilter,
   } = useBookmarks();
 
   const { recentlyAccessed, addRecentlyAccessed } = useRecentlyAccessed();
@@ -205,7 +212,14 @@ const BookmarksViewWithSidebar: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-3 py-1.5 bg-black/20 hover:bg-black/30 border border-white/10 rounded-md text-sm text-white/90 transition-colors">
+            <button 
+              onClick={openFilterModal}
+              className={`flex items-center gap-2 px-3 py-1.5 border border-white/10 rounded-md text-sm transition-colors ${
+                Object.values(activeFilters).some(value => value !== undefined && value !== null && value !== '') 
+                  ? 'bg-primary/20 text-primary border-primary/30' 
+                  : 'bg-black/20 hover:bg-black/30 text-white/90'
+              }`}
+            >
               <Filter size={16} /> Filter
             </button>
             <button className="flex items-center gap-2 px-3 py-1.5 bg-black/20 hover:bg-black/30 border border-white/10 rounded-md text-sm text-white/90 transition-colors">
@@ -292,6 +306,14 @@ const BookmarksViewWithSidebar: React.FC = () => {
           />
         )}
       </section>
+      
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={closeFilterModal}
+        onApplyFilter={applyFilter}
+        currentFilters={activeFilters}
+      />
     </div>
   );
 };

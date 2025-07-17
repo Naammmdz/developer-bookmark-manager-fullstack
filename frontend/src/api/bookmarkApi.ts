@@ -22,3 +22,21 @@ export const deleteBookmark = (id: number) =>
 // Accepts an ID and a partial Bookmark object with changes to apply
 export const updateBookmark = (id: number, changes: Partial<Bookmark>) =>
   api.patch<Bookmark>(`/bookmarks/${id}`, changes).then(r => r.data);
+
+// Filter bookmarks with various criteria
+export const filterBookmarks = (params: {
+  title?: string;
+  url?: string;
+  isFavorite?: boolean;
+  tag?: string;
+  sortBy?: string;
+}) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, value.toString());
+    }
+  });
+  
+  return api.get<Bookmark[]>(`/bookmarks/filterResult?${searchParams.toString()}`).then(r => r.data);
+};
