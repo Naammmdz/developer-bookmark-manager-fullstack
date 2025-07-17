@@ -37,6 +37,12 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ onClose }) => {
   };
 
   const handleEdit = () => {
+    // Sync form data with current user data when entering edit mode
+    setFormData({
+      username: user?.username || '',
+      email: user?.email || '',
+      fullName: user?.fullName || ''
+    });
     setIsEditing(true);
     setError(null);
     setSuccess(null);
@@ -59,18 +65,51 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ onClose }) => {
     setSuccess(null);
 
     try {
-      // Only send fields that have changed
-      const updateData: any = {};
-      if (formData.username !== user.username) updateData.username = formData.username;
-      if (formData.email !== user.email) updateData.email = formData.email;
-      if (formData.fullName !== user.fullName) updateData.fullName = formData.fullName;
+      // Client-side validation
+      if (!formData.username.trim()) {
+        setError('Username is required');
+        setIsLoading(false);
+        return;
+      }
 
-      // If no changes, just exit edit mode
-      if (Object.keys(updateData).length === 0) {
+      if (!formData.email.trim()) {
+        setError('Email is required');
+        setIsLoading(false);
+        return;
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setError('Please enter a valid email address');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!formData.fullName.trim()) {
+        setError('Full name is required');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if anything has changed
+      const hasChanges = 
+        formData.username !== user.username ||
+        formData.email !== user.email ||
+        formData.fullName !== user.fullName;
+
+      if (!hasChanges) {
         setIsEditing(false);
         setIsLoading(false);
         return;
       }
+
+      // Send all fields (not just changed ones) to avoid backend validation issues
+      const updateData = {
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        fullName: formData.fullName.trim()
+      };
 
       await updateProfile(updateData);
       setSuccess('Profile updated successfully!');
