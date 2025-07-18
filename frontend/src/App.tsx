@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect, createContext, useContext } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import {
   BookmarkProvider,
@@ -53,6 +53,15 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+
+// Create DragContext to share drag position between components
+export const DragContext = createContext<{
+  dragPosition: { x: number; y: number };
+  setDragPosition: (pos: { x: number; y: number }) => void;
+}>({
+  dragPosition: { x: 0, y: 0 },
+  setDragPosition: () => {},
+});
 
 
 // Props for AppLayout
@@ -339,6 +348,7 @@ const ProfileView: React.FC = () => (
 const AppWithDragHandlers: React.FC = () => {
   const { moveBookmarkToCollection, reorderBookmarks, bookmarks } = useBookmarks();
   const { user: currentUser } = useAuth();
+  const { dragPosition, setDragPosition } = useContext(DragContext);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -420,7 +430,7 @@ const AppWithDragHandlers: React.FC = () => {
 
   return (
     <DndContext
-      sensors={sensors}
+sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
@@ -503,14 +513,39 @@ const AppWithDragHandlers: React.FC = () => {
       </Routes>
       {/* KeyboardShortcutsButton removed from here, now in AppLayout */}
       
-      <DragOverlay>
+<DragOverlay>
         {activeId && activeBookmark ? (
-          <div className="bg-primary/20 backdrop-blur-sm border border-primary/50 rounded-lg px-4 py-2 max-w-xs shadow-2xl">
-            <div className="text-white font-medium text-sm truncate">
-              {activeBookmark.title}
+          <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl px-4 py-3 shadow-2xl max-w-xs transform scale-90 cursor-grabbing">
+            <div className="flex items-center gap-3">
+              {/* Enhanced bookmark icon with glow effect */}
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500/60 to-purple-500/60 rounded-xl flex items-center justify-center flex-shrink-0 shadow-xl border border-white/20">
+                <svg className="w-6 h-6 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                </svg>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-semibold text-sm truncate drop-shadow-sm">
+                  {activeBookmark.title}
+                </div>
+                <div className="text-white/70 text-xs mt-0.5 truncate">
+                  {activeBookmark.url.replace(/^https?:\/\//, '').split('/')[0]}
+                </div>
+              </div>
+              
+              {/* Enhanced moving indicator with glow */}
+              <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-full animate-pulse flex-shrink-0 shadow-lg" />
             </div>
-            <div className="text-white/60 text-xs mt-1">
-              Moving to collection...
+            
+            {/* Enhanced arrow indicator */}
+            <div className="mt-3 pt-2 border-t border-white/20">
+              <div className="flex items-center gap-2 text-white/80 text-xs">
+                <svg className="w-4 h-4 animate-pulse text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                <span className="animate-pulse font-medium">Moving to collection...</span>
+              </div>
             </div>
           </div>
         ) : null}
@@ -520,13 +555,16 @@ const AppWithDragHandlers: React.FC = () => {
 };
 
 function App() {
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
 
-return (
-    <Pointer>
-      <BookmarkProvider>
-        <AppWithDragHandlers />
-      </BookmarkProvider>
-    </Pointer>
+  return (
+    <DragContext.Provider value={{ dragPosition, setDragPosition }}>
+      <Pointer>
+        <BookmarkProvider>
+          <AppWithDragHandlers />
+        </BookmarkProvider>
+      </Pointer>
+    </DragContext.Provider>
   );
 }
 

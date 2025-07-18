@@ -325,6 +325,7 @@ const SortableBookmarkItem: React.FC<SortableBookmarkItemProps> = ({
       style={style}
       {...attributes}
       {...listeners}
+      data-bookmark-id={bookmark.id}
       className={`
         ${isDragging ? 'cursor-grabbing scale-105' : 'cursor-grab hover:scale-102'} 
         transition-all duration-200 ease-out

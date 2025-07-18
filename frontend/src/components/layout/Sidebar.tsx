@@ -20,28 +20,11 @@ interface SidebarItemProps {
   itemIndex?: number; // Added for improved animation delay calculation
   onDelete?: () => void; // Optional delete handler for user collections
   isDeletable?: boolean; // Flag to show delete option
+  onContextMenu?: (e: React.MouseEvent) => void; // Context menu handler
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActive, onClick, isStaticCollection, itemIndex, onDelete, isDeletable }) => {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActive, onClick, isStaticCollection, itemIndex, onDelete, isDeletable, onContextMenu }) => {
   const { setNodeRef, isOver } = useDroppable({ id: `collection-${id}` });
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (showDeleteConfirm) {
-      onDelete?.();
-      setShowDeleteConfirm(false);
-    } else {
-      setShowDeleteConfirm(true);
-      // Auto-hide confirmation after 3 seconds
-      setTimeout(() => setShowDeleteConfirm(false), 3000);
-    }
-  };
-
-  const handleCancelDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDeleteConfirm(false);
-  };
 
   return (
     <motion.div
@@ -54,6 +37,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActi
     >
       <button
         onClick={onClick}
+        onContextMenu={onContextMenu}
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ease-in-out
                     ${isActive
                       ? 'bg-primary/20 text-primary font-medium border border-primary/30'
@@ -70,38 +54,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActi
           </span>
         )}
       </button>
-      
-      {/* Delete button for deletable items - positioned to the left of badge count */}
-      {isDeletable && (
-        <div className="absolute right-12 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-          {showDeleteConfirm ? (
-            <div className="flex gap-1">
-              <button
-                onClick={handleDelete}
-                className="p-1 rounded bg-red-500/80 text-white text-xs hover:bg-red-600 transition-colors"
-                title="Confirm delete"
-              >
-                ✓
-              </button>
-              <button
-                onClick={handleCancelDelete}
-                className="p-1 rounded bg-gray-500/80 text-white text-xs hover:bg-gray-600 transition-colors"
-                title="Cancel"
-              >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleDelete}
-              className="p-1 rounded hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
-              title="Delete collection"
-            >
-              <Trash2 size={14} />
-            </button>
-          )}
-        </div>
-      )}
     </motion.div>
   );
 };
@@ -118,6 +70,20 @@ const Sidebar: React.FC = () => {
     openAddCollectionModal, // Destructure openAddCollectionModal, remove addCollection
     deleteCollection // Add deleteCollection function
   } = useBookmarks();
+
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+
+  // Close context menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      setContextMenu(null);
+    };
+
+    if (contextMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [contextMenu]);
 
   // handleAddNewCollection (using window.prompt) is now removed.
 
@@ -187,6 +153,10 @@ const Sidebar: React.FC = () => {
                 itemIndex={index} // Pass the index as itemIndex
                 isDeletable={isDeletable} // Use isDefault property to determine if deletable
                 onDelete={() => deleteCollection(sColl.id.toString())}
+                onContextMenu={isDeletable ? (e) => {
+                  e.preventDefault();
+                  setContextMenu({ x: e.pageX, y: e.pageY, id: sColl.id.toString() });
+                } : undefined}
               />
             );
           })}
@@ -219,6 +189,26 @@ const Sidebar: React.FC = () => {
           )}
         </div>
         
+        {/* Context Menu for Deleting Collection */}
+        {contextMenu && (
+          <div
+            className="fixed z-50 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700 py-1 min-w-[150px]"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            onMouseLeave={() => setContextMenu(null)}
+          >
+            <button
+              className="w-full px-3 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2 text-sm"
+              onClick={() => {
+                deleteCollection(contextMenu.id);
+                setContextMenu(null);
+              }}
+            >
+              <Trash2 size={16} />
+              Delete Collection
+            </button>
+          </div>
+        )}
+
         {/* Admin Section */}
         {user?.role === 'admin' && (
           <div className="p-4 border-t border-white/10">
