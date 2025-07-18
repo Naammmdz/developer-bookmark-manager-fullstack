@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Check, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { CodeBlock as CodeBlockType } from '../../types';
+import SyntaxHighlighter from './SyntaxHighlighter';
 
 interface CodeBlockProps {
   codeBlock: CodeBlockType;
@@ -121,14 +122,13 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         </div>
       )}
 
-      {/* Code Content */}
+{/* Code Content */}
       {!isCollapsed && (
         <div className="relative">
-          <pre className="overflow-x-auto p-4 text-sm">
-            <code className="text-white/90 font-mono whitespace-pre-wrap break-words">
-              {codeBlock.code}
-            </code>
-          </pre>
+          <SyntaxHighlighter
+            code={codeBlock.code}
+            language={codeBlock.language}
+          />
         </div>
       )}
     </div>

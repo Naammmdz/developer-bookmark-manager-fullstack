@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useBookmarks, CollectionWithItems } from '../../context/BookmarkContext'; // Import CollectionWithItems
+import { useCodeBlocks } from '../../context/CodeBlockContext'; // Import CodeBlockContext
 import { useAuth } from '../../context/AuthContext';
 import { PlusCircle, Trash2, MoreVertical, Shield } from 'lucide-react'; // Added for the "Add Collection" button
 import { CustomIcon } from '../../utils/iconMapping';
@@ -70,8 +71,31 @@ const Sidebar: React.FC = () => {
     openAddCollectionModal, // Destructure openAddCollectionModal, remove addCollection
     deleteCollection // Add deleteCollection function
   } = useBookmarks();
+  
+  const { codeBlocks } = useCodeBlocks(); // Get code blocks
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+  
+  // Helper function to calculate combined counts
+  const getCodeBlockCountForCollection = (collectionId: string, collectionName: string) => {
+    if (collectionId === 'all') {
+      return codeBlocks.length;
+    }
+    if (collectionId === 'favorites') {
+      return codeBlocks.filter(cb => cb.isFavorite).length;
+    }
+    if (collectionId === 'recently_added') {
+      return codeBlocks.length; // Recently added shows all code blocks
+    }
+    // For regular collections, match by collection name
+    return codeBlocks.filter(cb => cb.collection === collectionName).length;
+  };
+  
+  // Calculate combined counts
+  const getCombinedCount = (collectionId: string, bookmarkCount: number, collectionName: string) => {
+    const codeBlockCount = getCodeBlockCountForCollection(collectionId, collectionName);
+    return bookmarkCount + codeBlockCount;
+  };
 
   // Close context menu when clicking outside
   React.useEffect(() => {
@@ -117,7 +141,7 @@ const Sidebar: React.FC = () => {
               id="all"
               icon={allData.icon}
               name={allData.name}
-              count={allData.count}
+              count={getCombinedCount('all', allData.count, allData.name)}
               isActive={activeCollection === 'all'}
               onClick={() => setActiveCollection('all')}
             />
@@ -146,7 +170,7 @@ const Sidebar: React.FC = () => {
                 id={sColl.id.toString()}
                 icon={sColl.icon} // Use sColl.icon for the specific collection
                 name={sColl.name} // Use sColl.name for consistency from static definition
-                count={data.count}
+                count={getCombinedCount(sColl.id.toString(), data.count, sColl.name)}
                 isActive={activeCollection === sColl.id.toString()}
                 onClick={() => setActiveCollection(sColl.id.toString())}
                 isStaticCollection={true} // For staggered animation
@@ -172,7 +196,7 @@ const Sidebar: React.FC = () => {
               id="favorites"
               icon={favoritesData.icon}
               name={favoritesData.name}
-              count={favoritesData.count}
+              count={getCombinedCount('favorites', favoritesData.count, favoritesData.name)}
               isActive={activeCollection === 'favorites'}
               onClick={() => setActiveCollection('favorites')}
             />
@@ -182,7 +206,7 @@ const Sidebar: React.FC = () => {
               id="recently_added"
               icon={recentlyAddedData.icon}
               name={recentlyAddedData.name}
-              count={recentlyAddedData.count}
+              count={getCombinedCount('recently_added', recentlyAddedData.count, recentlyAddedData.name)}
               isActive={activeCollection === 'recently_added'}
               onClick={() => setActiveCollection('recently_added')}
             />

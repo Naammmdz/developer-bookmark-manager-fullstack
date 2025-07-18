@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Code, Copy, Heart, Eye, EyeOff, Edit, Trash2, Calendar, Tag } from 'lucide-react';
 import { CodeBlock as CodeBlockType } from '../../types';
+import SyntaxHighlighter from '../ui/SyntaxHighlighter';
 
 interface CodeBlockProps {
   codeBlock: CodeBlockType;
@@ -96,7 +97,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      whileHover={{ scale: 1.02 }}
       className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:border-white/20 transition-all duration-300 cursor-pointer"
       onClick={handleClick}
     >
@@ -174,15 +174,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
       {/* Code Preview */}
       <div className="relative mb-3">
-        <div className="bg-black/30 border border-white/10 rounded-lg p-3 overflow-hidden">
-          <pre className="text-xs font-mono text-white/80 leading-relaxed">
-            <code>
-              {isExpanded ? codeBlock.code : previewCode}
-              {!isExpanded && hasMoreLines && (
-                <span className="text-white/40">...</span>
-              )}
-            </code>
-          </pre>
+        <div className="bg-black/30 border border-white/10 rounded-lg overflow-hidden">
+          <SyntaxHighlighter
+            code={isExpanded ? codeBlock.code : previewCode + (hasMoreLines && !isExpanded ? '\n...' : '')}
+            language={codeBlock.language}
+            className="text-xs leading-relaxed p-3 m-0 bg-transparent"
+          />
         </div>
         
         {hasMoreLines && (
