@@ -3,7 +3,32 @@ import { motion } from 'framer-motion';
 // useBookmarks removed, functionality will come from props
 import OptimizedBookmarkCard from './OptimizedBookmarkCard';
 // FolderOpen removed as empty state is handled by parent
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import {
+  DndContext,
+  closestCenter,
+  closestCorners,
+  rectIntersection,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  DragOverEvent,
+  CollisionDetection,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import GlassCard from '../ui/GlassCard';
 import { Bookmark } from '../../types'; // Import Bookmark type for props
 
@@ -248,6 +273,79 @@ const BookmarkPreviewModal: React.FC<BookmarkPreviewModalProps> = ({ bookmark, o
   );
 };
 
+// Sortable Bookmark Item Component
+interface SortableBookmarkItemProps {
+  bookmark: Bookmark;
+  index: number;
+  onPreview: () => void;
+  bulkMode: boolean;
+  checked: boolean;
+  onCheck: () => void;
+  viewMode: 'grid' | 'list';
+  onBookmarkClick?: (bookmark: Bookmark) => void;
+}
+
+const SortableBookmarkItem: React.FC<SortableBookmarkItemProps> = ({
+  bookmark,
+  index,
+  onPreview,
+  bulkMode,
+  checked,
+  onCheck,
+  viewMode,
+  onBookmarkClick,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+    isSorting,
+  } = useSortable({ 
+    id: bookmark.id,
+    transition: {
+      duration: 200,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
+    opacity: isDragging ? 0 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
+    transformOrigin: 'center',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`
+        ${isDragging ? 'cursor-grabbing scale-105' : 'cursor-grab hover:scale-102'} 
+        transition-all duration-200 ease-out
+        ${isSorting ? 'z-10' : ''}
+        ${isDragging ? 'shadow-2xl' : ''}
+      `}
+    >
+      <OptimizedBookmarkCard
+        bookmark={bookmark}
+        index={index}
+        onPreview={onPreview}
+        bulkMode={bulkMode}
+        checked={checked}
+        onCheck={onCheck}
+        viewMode={viewMode}
+        onBookmarkClick={onBookmarkClick}
+      />
+    </div>
+  );
+};
+
 interface BookmarkGridProps {
   bookmarks: Bookmark[];
   reorderBookmarks: (movedBookmarkId: number, targetBookmarkId: number | null) => void; // Updated signature
@@ -261,6 +359,7 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
   const [previewBookmark, setPreviewBookmark] = useState<Bookmark | null>(null); // Typed state
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [activeId, setActiveId] = useState<number | null>(null);
 
   const toggleBulkMode = () => {
     setBulkMode((v) => !v);
@@ -273,30 +372,7 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
     );
   };
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination || !result.source) return;
-    if (result.source.index === result.destination.index && result.source.droppableId === result.destination.droppableId) return;
-
-    const movedItem = bookmarks[result.source.index];
-    if (!movedItem) {
-      console.error("BookmarkGrid: Moved item not found at source index", result.source.index);
-      return;
-    }
-    const movedItemId = movedItem.id;
-
-    // Create a list of items excluding the moved item, to determine the target based on visual drop position
-    const remainingItems = bookmarks.filter(bm => bm.id !== movedItemId);
-
-    let targetItemId: number | null = null;
-    // If the destination index is within the bounds of the remaining items, it's the ID of that item.
-    if (result.destination.index < remainingItems.length) {
-      targetItemId = remainingItems[result.destination.index].id;
-    }
-    // If result.destination.index === remainingItems.length, it means item is dropped at the very end.
-    // In this case, targetItemId remains null, signifying "append to end".
-
-    reorderBookmarks(movedItemId, targetItemId);
-  };
+  const activeBookmark = activeId ? bookmarks.find((bookmark) => bookmark.id === activeId) : null;
 
   // Empty state is now handled by the parent component (BookmarksViewWithSidebar)
   // The `if (bookmarks.length === 0)` block has been removed.
@@ -325,49 +401,32 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
           </div>
         )}
       </div>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="bookmarkGrid" direction="vertical">
-          {(provided) => (
-            <div
-              className={`w-full ${
-                viewMode === 'grid' 
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5' 
-                  : 'flex flex-col gap-3'
-              }`}
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-            >
-              {bookmarks.map((bookmark, index) => ( // Use `bookmarks` prop
-                <Draggable key={bookmark.id} draggableId={bookmark.id.toString()} index={index}>
-                  {(providedDraggable, snapshot) => (
-                    <div
-                      ref={providedDraggable.innerRef}
-                      {...providedDraggable.draggableProps}
-                      {...providedDraggable.dragHandleProps}
-                      style={{
-                        ...providedDraggable.draggableProps.style,
-                        zIndex: snapshot.isDragging ? 50 : 'auto', // Ensure dragging item is on top
-                      }}
-                    >
-                      <OptimizedBookmarkCard
-                        bookmark={bookmark}
-                        index={index} // Pass index if BookmarkCard uses it
-                        onPreview={() => setPreviewBookmark(bookmark)}
-                        bulkMode={bulkMode}
-                        checked={selectedIds.includes(bookmark.id)}
-                        onCheck={() => toggleSelect(bookmark.id)}
-                        viewMode={viewMode}
-                        onBookmarkClick={onBookmarkClick}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <SortableContext
+        items={bookmarks.map((bookmark) => bookmark.id)}
+        strategy={viewMode === 'grid' ? rectSortingStrategy : verticalListSortingStrategy}
+      >
+          <div
+            className={`w-full ${
+              viewMode === 'grid' 
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5' 
+                : 'flex flex-col gap-3'
+            }`}
+          >
+            {bookmarks.map((bookmark, index) => (
+              <SortableBookmarkItem
+                key={bookmark.id}
+                bookmark={bookmark}
+                index={index}
+                onPreview={() => setPreviewBookmark(bookmark)}
+                bulkMode={bulkMode}
+                checked={selectedIds.includes(bookmark.id)}
+                onCheck={() => toggleSelect(bookmark.id)}
+                viewMode={viewMode}
+                onBookmarkClick={onBookmarkClick}
+              />
+            ))}
+          </div>
+        </SortableContext>
       {previewBookmark && (
         // The onClick on this div might be too broad, consider if it should be on a specific backdrop element
         <div onClick={() => setPreviewBookmark(null)}>

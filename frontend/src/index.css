@@ -67,7 +67,11 @@ body {
 
 @layer utilities {
   .glass {
-    @apply bg-card border border-border rounded;
+    @apply bg-card border border-border rounded-xl;
+  }
+
+  .glass-border {
+    @apply border-2 border-white/20 hover:border-white/30 transition-colors duration-200;
   }
 
   .glass-hover {

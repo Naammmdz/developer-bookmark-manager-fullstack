@@ -7,6 +7,8 @@ import { PlusCircle, Trash2, MoreVertical, Shield } from 'lucide-react'; // Adde
 import { CustomIcon } from '../../utils/iconMapping';
 
 // Define SidebarItemProps and SidebarItem inline functional component
+import { useDroppable } from '@dnd-kit/core';
+
 interface SidebarItemProps {
   id: string;
   icon: string; // Emoji or simple character
@@ -22,6 +24,7 @@ interface SidebarItemProps {
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActive, onClick, isStaticCollection, itemIndex, onDelete, isDeletable }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { setNodeRef, isOver } = useDroppable({ id: `collection-${id}` });
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -42,6 +45,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActi
 
   return (
     <motion.div
+      ref={setNodeRef} 
       key={id}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
@@ -53,10 +57,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActi
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ease-in-out
                     ${isActive
                       ? 'bg-primary/20 text-primary font-medium border border-primary/30'
-                      : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'}`}
+                      : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'}
+                    ${isOver ? 'bg-primary/40 border-primary/60 border-2 scale-110 shadow-lg shadow-primary/20' : ''}`}
       >
         <CustomIcon icon={icon} size={20} className="w-5 h-5 flex items-center justify-center" />
         <span className="flex-1 truncate text-sm font-medium">{name}</span>
+        {/* Show badge count for all items */}
         {count > 0 && (
           <span className={`text-xs px-1.5 py-0.5 rounded-full font-mono
                            ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
@@ -65,9 +71,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, name, count, isActi
         )}
       </button>
       
-      {/* Delete button for user collections */}
+      {/* Delete button for deletable items - positioned to the left of badge count */}
       {isDeletable && (
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-12 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
           {showDeleteConfirm ? (
             <div className="flex gap-1">
               <button

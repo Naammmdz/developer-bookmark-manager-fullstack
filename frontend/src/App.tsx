@@ -42,6 +42,17 @@ import {
   Grid,
   List,
 } from 'lucide-react';
+import {
+  DndContext,
+  DragOverEvent,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 
 
 // Props for AppLayout
@@ -324,11 +335,14 @@ const ProfileView: React.FC = () => (
   </main>
 );
 
-function App() {
+// Inner component that has access to BookmarkProvider context
+const AppWithDragHandlers: React.FC = () => {
+  const { moveBookmarkToCollection, reorderBookmarks, bookmarks } = useBookmarks();
   const { user: currentUser } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [activeId, setActiveId] = useState<number | null>(null);
   const openCollectionsModal = () => {};
 
   const openLoginModal = () => setIsLoginModalOpen(true);
@@ -345,85 +359,172 @@ function App() {
   const openSettingsModal = () => setIsSettingsModalOpen(true);
   const closeSettingsModal = () => setIsSettingsModalOpen(false);
 
-  return (
-    <Pointer>
-      <BookmarkProvider>
-        {/* Modals are rendered here, outside of Routes, so they can be displayed over any page */}
-        <LoginModal 
-          isOpen={isLoginModalOpen} 
-          onClose={closeLoginModal} 
-          openRegisterModal={openRegisterModal}
-        />
-        <RegisterModal
-          isOpen={isRegisterModalOpen}
-          onClose={closeRegisterModal}
-          openLoginModal={openLoginModal}
-        />
-        <SettingsModal
-          isOpen={isSettingsModalOpen}
-          onClose={closeSettingsModal}
-        />
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 3,
+      },
+    })
+  );
 
-        <Routes>
-          {/* Root route - redirects based on authentication */}
-          <Route path="/" element={<RootRoute />} />
-          
-          {/* Landing page without sidebar/layout */}
-          <Route path="/landing" element={<LandingPage />} />
-          
-          {/* Protected app routes */}
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as number);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+
+    if (over && over.id.toString().startsWith('collection-')) {
+      const collectionId = over.id.toString().replace('collection-', '');
+      console.log(`Dragging over collection: ${collectionId}`);
+      // Handle logic for checking available collections to drop into
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    // Check if dropped on a collection
+    if (over && over.id.toString().startsWith('collection-')) {
+      const collectionId = over.id.toString().replace('collection-', '');
+      const bookmarkId = active.id as number;
+      
+      console.log(`Moving bookmark ${bookmarkId} to collection ${collectionId}`);
+      // Use the moveBookmarkToCollection function from BookmarkProvider
+      moveBookmarkToCollection(bookmarkId, collectionId);
+    }
+    // Check if dropped on another bookmark for reordering
+    else if (over && typeof over.id === 'number') {
+      const oldIndex = bookmarks.findIndex((bookmark) => bookmark.id === active.id);
+      const newIndex = bookmarks.findIndex((bookmark) => bookmark.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const movedItem = bookmarks[oldIndex];
+        const targetItem = bookmarks[newIndex];
+
+        let targetId: number | null = null;
+
+        if (oldIndex < newIndex) {
+          targetId = newIndex === bookmarks.length - 1 ? null : bookmarks[newIndex + 1]?.id || null;
+        } else {
+          targetId = targetItem.id;
+        }
+
+        reorderBookmarks(movedItem.id, targetId);
+      }
+    }
+  };
+
+  const activeBookmark = activeId ? bookmarks.find((bookmark) => bookmark.id === activeId) : null;
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      {/* Modals are rendered here, outside of Routes, so they can be displayed over any page */}
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={closeLoginModal} 
+        openRegisterModal={openRegisterModal}
+      />
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={closeRegisterModal}
+        openLoginModal={openLoginModal}
+      />
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={closeSettingsModal}
+      />
+
+      <Routes>
+        {/* Root route - redirects based on authentication */}
+        <Route path="/" element={<RootRoute />} />
+        
+        {/* Landing page without sidebar/layout */}
+        <Route path="/landing" element={<LandingPage />} />
+        
+        {/* Protected app routes */}
+        <Route
+          path="/app"
+          element={
+            <ProtectedRoute>
+              <AppLayout
+                openLoginModal={openLoginModal}
+                openRegisterModal={openRegisterModal}
+                openSettingsModal={openSettingsModal}
+                openCollectionsModal={openCollectionsModal}
+              />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<BookmarksViewWithSidebar />} />
           <Route
-            path="/app"
-            element={
-              <ProtectedRoute>
-                <AppLayout
+            path="profile"
+            element={<ProfileView />}
+          />
+          {/* Add other routes that use AppLayout here */}
+        </Route>
+        
+        {/* Admin routes with AdminLayout */}
+        <Route
+          path="/app/admin"
+          element={
+            <ProtectedRoute>
+              {currentUser?.role === 'admin' ? (
+                <AdminLayout
                   openLoginModal={openLoginModal}
                   openRegisterModal={openRegisterModal}
                   openSettingsModal={openSettingsModal}
                   openCollectionsModal={openCollectionsModal}
                 />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<BookmarksViewWithSidebar />} />
-            <Route
-              path="profile"
-              element={<ProfileView />}
-            />
-            {/* Add other routes that use AppLayout here */}
-          </Route>
-          
-          {/* Admin routes with AdminLayout */}
-          <Route
-            path="/app/admin"
-            element={
-              <ProtectedRoute>
-                {currentUser?.role === 'admin' ? (
-                  <AdminLayout
-                    openLoginModal={openLoginModal}
-                    openRegisterModal={openRegisterModal}
-                    openSettingsModal={openSettingsModal}
-                    openCollectionsModal={openCollectionsModal}
-                  />
-                ) : (
-                  <Navigate to="/app" replace />
-                )}
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminPage />} />
-            <Route path="users" element={<AdminPage />} />
-            <Route path="roles" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Roles & Permissions</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-            <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Analytics</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-            <Route path="system" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Status</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-            <Route path="logs" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Logs</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-            <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Admin Settings</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
-          </Route>
-          
-          {/* Fallback for unmatched routes */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        {/* KeyboardShortcutsButton removed from here, now in AppLayout */}
+              ) : (
+                <Navigate to="/app" replace />
+              )}
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminPage />} />
+          <Route path="users" element={<AdminPage />} />
+          <Route path="roles" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Roles & Permissions</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Analytics</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="system" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Status</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="logs" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">System Logs</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+          <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold text-white mb-4">Admin Settings</h1><p className="text-white/70">This feature is coming soon...</p></div>} />
+        </Route>
+        
+        {/* Fallback for unmatched routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      {/* KeyboardShortcutsButton removed from here, now in AppLayout */}
+      
+      <DragOverlay>
+        {activeId && activeBookmark ? (
+          <div className="bg-primary/20 backdrop-blur-sm border border-primary/50 rounded-lg px-4 py-2 max-w-xs shadow-2xl">
+            <div className="text-white font-medium text-sm truncate">
+              {activeBookmark.title}
+            </div>
+            <div className="text-white/60 text-xs mt-1">
+              Moving to collection...
+            </div>
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
+  );
+};
+
+function App() {
+
+return (
+    <Pointer>
+      <BookmarkProvider>
+        <AppWithDragHandlers />
       </BookmarkProvider>
     </Pointer>
   );

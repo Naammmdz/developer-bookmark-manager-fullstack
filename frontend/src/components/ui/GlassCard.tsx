@@ -16,7 +16,7 @@ const GlassCard: React.FC<GlassCardProps> = ({
   delay = 0,
   onClick
 }) => {
-  const cardClasses = "glass glass-hover";
+  const cardClasses = "glass glass-hover glass-border";
   
   return animate ? (
     <motion.div

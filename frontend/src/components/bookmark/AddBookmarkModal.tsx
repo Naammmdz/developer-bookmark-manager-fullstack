@@ -41,12 +41,12 @@ const AddBookmarkModal: React.FC = () => {
   // Get the current collection name based on activeCollection
   const getCurrentCollectionName = () => {
     if (activeCollection === 'all' || activeCollection === 'favorites' || activeCollection === 'recently_added') {
-      // For special collections, default to first regular collection or empty string
-      return collections.length > 0 ? collections[0].name : '';
+      // For special collections, default to first regular collection or 'Uncategorized'
+      return collections.length > 0 ? collections[0].name : 'Uncategorized';
     }
     // For regular collections, find the collection name
     const currentCollection = collectionData?.[activeCollection];
-    return currentCollection?.name || (collections.length > 0 ? collections[0].name : '');
+    return currentCollection?.name || (collections.length > 0 ? collections[0].name : 'Uncategorized');
   };
   
   const [formData, setFormData] = useState({
@@ -54,11 +54,17 @@ const AddBookmarkModal: React.FC = () => {
     url: '',
     description: '',
     tags: [''],
-    collection: getCurrentCollectionName(),
+    collection: 'Uncategorized', // Start with default, will be updated by useEffect
     isPublic: true,
     isFavorite: false,
     favicon: ''
   });
+  
+  // Update collection when collections load or activeCollection changes
+  React.useEffect(() => {
+    const newCollection = getCurrentCollectionName();
+    setFormData(prev => ({ ...prev, collection: newCollection }));
+  }, [collections, activeCollection, collectionData]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
