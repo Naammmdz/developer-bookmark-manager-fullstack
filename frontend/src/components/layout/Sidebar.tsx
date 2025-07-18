@@ -189,6 +189,7 @@ const Sidebar: React.FC = () => {
           )}
         </div>
         
+        
         {/* Context Menu for Deleting Collection */}
         {contextMenu && (
           <div

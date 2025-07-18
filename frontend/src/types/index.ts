@@ -1,3 +1,17 @@
+export interface CodeBlock {
+  id: number;
+  title: string;
+  language: string;
+  code: string;
+  description?: string;
+  tags: string[];
+  collection: string;
+  isPublic: boolean;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Bookmark {
   id: number;
   title: string;

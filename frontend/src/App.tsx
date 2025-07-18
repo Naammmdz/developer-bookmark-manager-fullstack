@@ -5,12 +5,14 @@ import {
   useBookmarks,
   CollectionWithItems,
 } from './context/BookmarkContext';
+import { CodeBlockProvider, useCodeBlocks } from './context/CodeBlockContext';
 import { useAuth } from './context/AuthContext';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
 import AdminPage from './pages/AdminPage';
+import CodeBlockView from './pages/CodeBlockView';
 import Header from './components/layout/Header';
 import { useRecentlyAccessed } from './hooks/useRecentlyAccessed';
 import Sidebar from './components/layout/Sidebar';
@@ -19,6 +21,7 @@ import BookmarkGrid from './components/bookmark/BookmarkGrid';
 import MobileNavigation from './components/layout/MobileNavigation';
 import AddBookmarkModal from './components/bookmark/AddBookmarkModal';
 import AddCollectionModal from './components/collection/AddCollectionModal'; // Import AddCollectionModal
+import AddCodeBlockModal from './components/ui/AddCodeBlockModal';
 import FilterModal from './components/filter/FilterModal';
 import LoginModal from './components/auth/LoginModal';
 import RegisterModal from './components/auth/RegisterModal';
@@ -85,6 +88,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     closeAddCollectionModal,
     addCollection
   } = useBookmarks();
+  
+  const {
+    isModalOpen: isAddCodeBlockModalOpen,
+    closeModal: closeAddCodeBlockModal,
+    addCodeBlock
+  } = useCodeBlocks();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   
@@ -169,9 +178,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           onAddCollection={addCollection}
         />
       )}
+      {/* AddCodeBlockModal controlled by CodeBlockContext */}
+      {isAddCodeBlockModalOpen && (
+        <AddCodeBlockModal
+          isOpen={isAddCodeBlockModalOpen}
+          onClose={closeAddCodeBlockModal}
+          onSave={addCodeBlock}
+        />
+      )}
     </div>
   );
 };
+
+import CollectionTabs from './components/collection/CollectionTabs';
 
 const BookmarksViewWithSidebar: React.FC = () => {
   const {
@@ -179,8 +198,6 @@ const BookmarksViewWithSidebar: React.FC = () => {
     collectionData,
     searchTerm,
     openModal,
-    reorderBookmarks, // Added for passing to BookmarkGrid
-    deleteBookmarks, // Added for passing to BookmarkGrid
     viewMode,
     setViewMode,
     // Filter functionality
@@ -191,31 +208,12 @@ const BookmarksViewWithSidebar: React.FC = () => {
     applyFilter,
   } = useBookmarks();
 
-  const { recentlyAccessed, addRecentlyAccessed } = useRecentlyAccessed();
-  
-  // Get recent bookmarks for the "Recently Accessed" section
-  const displayRecentBookmarks = recentlyAccessed.slice(0, 5);
+  const { openModal: openCodeBlockModal } = useCodeBlocks();
+  const { addRecentlyAccessed } = useRecentlyAccessed();
+
   const currentViewData = collectionData?.[activeCollection];
   const icon = currentViewData?.icon || 'folder';
   const name = currentViewData?.name || 'Loading...';
-
-  const baseItems = currentViewData?.items || [];
-  const finalItemsToDisplay =
-    searchTerm.trim() === ''
-      ? baseItems
-      : baseItems.filter((bookmark) => {
-          const searchTermLower = searchTerm.toLowerCase();
-          return (
-            bookmark.title.toLowerCase().includes(searchTermLower) ||
-            (bookmark.description &&
-              bookmark.description.toLowerCase().includes(searchTermLower)) ||
-            bookmark.tags.some((tag) =>
-              tag.toLowerCase().includes(searchTermLower),
-            )
-          );
-        });
-
-  const titleBookmarkCount = currentViewData?.count || 0; // For display in title, before search filtering
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
@@ -227,9 +225,6 @@ const BookmarksViewWithSidebar: React.FC = () => {
               <CustomIcon icon={icon} size={24} className="text-white" />
               {name}
             </h2>
-            <p className="text-sm text-white/70">
-              {titleBookmarkCount} bookmarks found
-            </p>
           </div>
           <div className="flex items-center gap-2">
             <button 
@@ -271,62 +266,17 @@ const BookmarksViewWithSidebar: React.FC = () => {
         </div>
       </section>
 
-      {/* Recently Accessed Section (Wrapped) */}
-      {displayRecentBookmarks.length > 0 && (
-        <section className="px-6 mb-8">
-          <div className="rounded-2xl bg-black/20 backdrop-blur-lg border border-white/10 px-6 py-4 flex items-center gap-3 overflow-x-auto">
-            <div className="text-white/80 font-medium mr-2">
-              Recently Accessed
-            </div>
-            {displayRecentBookmarks.map((bookmark) => (
-              <span 
-                key={bookmark.id} 
-                className="rounded-lg bg-white/10 px-3 py-1 text-white/80 text-sm whitespace-nowrap cursor-pointer hover:bg-white/20 transition-colors"
-                onClick={() => window.open(bookmark.url, '_blank')}
-                title={bookmark.url}
-              >
-                {bookmark.title}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Collection Tabs Section */}
+      <CollectionTabs
+        collectionId={activeCollection}
+        collectionName={name}
+        collectionIcon={icon}
+        searchTerm={searchTerm}
+        viewMode={viewMode}
+        onOpenBookmarkModal={openModal}
+        onOpenCodeBlockModal={openCodeBlockModal}
+      />
 
-      {/* Bookmark Grid Section (Wrapped) */}
-      <section className="px-6 pb-6 flex-1 flex flex-col">
-        {finalItemsToDisplay.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
-            <PlusCircle size={48} className="mx-auto text-white/30 mb-4" />
-            <h3 className="text-xl font-semibold text-white/80 mb-2">
-              {searchTerm
-                ? 'No Bookmarks Match Your Search'
-                : 'This Collection is Empty'}
-            </h3>
-            <p className="text-white/50 mb-6 max-w-md">
-              {searchTerm
-                ? `Try refining your search term or clearing it to see all bookmarks in "${name}".`
-                : `Add some bookmarks to "${name}" to see them here.`}
-            </p>
-            {!searchTerm && (
-              <button
-                onClick={openModal} // openModal from useBookmarks
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2.5 px-5 rounded-lg flex items-center mx-auto text-sm transition-colors"
-              >
-                <ListPlus size={18} className="mr-2" /> Add Bookmark to "{name}"
-              </button>
-            )}
-          </div>
-        ) : (
-          <BookmarkGrid
-            bookmarks={finalItemsToDisplay}
-            reorderBookmarks={reorderBookmarks}
-            deleteBookmarks={deleteBookmarks}
-            viewMode={viewMode}
-            onBookmarkClick={addRecentlyAccessed}
-          />
-        )}
-      </section>
-      
       {/* Filter Modal */}
       <FilterModal
         isOpen={isFilterModalOpen}
@@ -478,6 +428,10 @@ sensors={sensors}
             path="profile"
             element={<ProfileView />}
           />
+          <Route
+            path="codeblocks"
+            element={<CodeBlockView />}
+          />
           {/* Add other routes that use AppLayout here */}
         </Route>
         
@@ -561,7 +515,9 @@ function App() {
     <DragContext.Provider value={{ dragPosition, setDragPosition }}>
       <Pointer>
         <BookmarkProvider>
-          <AppWithDragHandlers />
+          <CodeBlockProvider>
+            <AppWithDragHandlers />
+          </CodeBlockProvider>
         </BookmarkProvider>
       </Pointer>
     </DragContext.Provider>

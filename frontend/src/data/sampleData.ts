@@ -76,7 +76,7 @@ export const sampleBookmarks: Bookmark[] = [
 ];
 
 export const sampleCollections: Collection[] = [
-  { id: 1, name: "All Bookmarks", icon: "Bookmark", count: 6 },
+  { id: 1, name: "All Resources", icon: "Bookmark", count: 6 },
   { id: 2, name: "Frontend Resources", icon: "Layers", count: 3 },
   { id: 3, name: "Backend Resources", icon: "Server", count: 1 },
   { id: 4, name: "CSS Resources", icon: "Palette", count: 1 },

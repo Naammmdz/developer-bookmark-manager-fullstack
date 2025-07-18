@@ -43,8 +43,8 @@ const LandingHeader: React.FC = () => {
     <>
       <header className="fixed left-0 top-0 z-50 w-full -translate-y-4 animate-fade-in border-b border-white/10 bg-background/80 backdrop-blur-md opacity-0">
         <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link className="text-md flex items-center font-bold text-white" to="/landing">
-            Dev Bookmarks
+          <Link className="text-md flex items-center gap-2 font-bold text-white hover:opacity-80 transition-opacity" to="/landing">
+            <span>DevPin</span>
           </Link>
 
           <div className="hidden md:flex h-full items-center space-x-4">
@@ -96,8 +96,8 @@ const LandingHeader: React.FC = () => {
       {mobileMenuOpen && (
         <nav className="fixed left-0 top-0 z-40 h-screen w-full overflow-auto bg-background/90 backdrop-blur-md md:hidden">
           <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-4 sm:px-6">
-            <Link className="text-md flex items-center font-bold text-white" to="/landing">
-              Dev Bookmarks
+            <Link className="text-md flex items-center gap-2 font-bold text-white hover:opacity-80 transition-opacity" to="/landing">
+              <span>DevPin</span>
             </Link>
             <button 
               className="text-white/80 hover:text-white" 

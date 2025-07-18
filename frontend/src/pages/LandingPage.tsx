@@ -24,6 +24,7 @@ import ClientSection from '../components/landing/ClientSection';
 import PricingSection from '../components/landing/PricingSection';
 import LandingHeader from '../components/landing/LandingHeader';
 import Footer from '../components/landing/Footer';
+import Logo from '../imgs/Logo.png';
 
 interface HeroSectionProps {
   onLoginClick: () => void;
@@ -62,21 +63,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoginClick }) => {
         className="group inline-flex h-7 -translate-y-4 animate-fade-in items-center justify-between gap-1 rounded-full border border-white/5 bg-white/2 backdrop-blur-sm px-3 text-xs text-white opacity-0 transition-all ease-in hover:cursor-pointer hover:bg-white/5 [--animation-delay:200ms]"
       >
         <AnimatedShinyText className="inline-flex items-center justify-center">
-          <span>✨ Introducing Developer Bookmark Manager</span>
+          <span>✨ Introducing DevPin - Your Dev Resource Hub</span>
           <ArrowRight className="ml-1 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" size={12} />
         </AnimatedShinyText>
       </div>
       
-      <TextAnimate 
-        animation="slideUp" 
-        by="word"
-        as="h1"
-        className="-translate-y-4 text-balance bg-gradient-to-br from-white to-white/60 bg-clip-text py-6 text-5xl font-medium leading-none tracking-tighter text-transparent sm:text-6xl md:text-7xl lg:text-8xl"
-        startOnView
-        once
-      >
-        Organize your dev resources like never before.
-      </TextAnimate>
+      <h1 className="-translate-y-4 text-balance bg-gradient-to-br from-white to-white/60 bg-clip-text py-6 text-5xl font-medium leading-none tracking-tighter text-transparent sm:text-6xl md:text-7xl lg:text-8xl animate-fade-in opacity-0 [--animation-delay:400ms]">
+        Organize your <span className="whitespace-nowrap">dev resources</span><br />like never before.
+      </h1>
       
       <TextAnimate 
         animation="blurIn" 
@@ -86,7 +80,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoginClick }) => {
         once
         delay={0.2}
       >
-        The ultimate bookmark manager for developers. Save, organize, and access your favorite coding resources with beautiful UI and powerful features. Built with React, TypeScript, and Tailwind CSS.
+The ultimate resource manager for developers. Save, organize, and access your favorite bookmarks and code snippets with beautiful UI and powerful features. Built with React, TypeScript, and Tailwind CSS.
       </TextAnimate>
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
         <button
@@ -124,7 +118,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoginClick }) => {
           
           <img
             src={heroDarkImg}
-            alt="Developer Bookmark Manager"
+            alt="DevPin - Developer Resource Manager"
             className="relative size-full rounded-[inherit] border object-contain"
           />
         </div>
@@ -162,14 +156,14 @@ const CTASection: React.FC<CTASectionProps> = ({ onLoginClick }) => {
               numRows={8}
               className="text-center font-display text-4xl font-bold tracking-[-0.02em] text-white/20 drop-shadow-sm dark:text-white/20 md:text-7xl md:leading-[5rem]"
             >
-              ORGANIZE • SEARCH • BOOKMARK • SYNC • SHARE • DISCOVER • SAVE • MANAGE •
+              ORGANIZE • SEARCH • BOOKMARK • CODE • SYNC • SHARE • DISCOVER • SAVE • MANAGE •
             </VelocityScroll>
             
             <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-background"></div>
             <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-background"></div>
             <div className="absolute z-10 flex flex-col items-center justify-center">
-              <div className="mx-auto size-24 rounded-[2rem] border bg-white/10 p-3 shadow-2xl backdrop-blur-md dark:bg-black/10 lg:size-32">
-                <Bookmark className="mx-auto size-16 text-white lg:size-24" />
+              <div className="mx-auto p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl">
+                <img src={Logo} alt="DevPin" className="size-32 lg:size-40 object-contain rounded-2xl" />
               </div>
               <div className="z-10 mt-4 flex flex-col items-center text-center text-primary">
                 <TextAnimate 
@@ -180,7 +174,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onLoginClick }) => {
                   startOnView
                   once
                 >
-                  Stop losing your dev resources.
+                  Stop losing your bookmarks and code snippets.
                 </TextAnimate>
                 <TextAnimate 
                   animation="slideUp" 
@@ -191,7 +185,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onLoginClick }) => {
                   once
                   delay={0.3}
                 >
-                  Organize all your coding bookmarks in one place. Start free today.
+                  Organize all your bookmarks and code snippets in one place. Start free today.
                 </TextAnimate>
                 <button
                   onClick={handleGetStartedClick}

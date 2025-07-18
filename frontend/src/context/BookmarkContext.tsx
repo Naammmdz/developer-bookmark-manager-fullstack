@@ -104,7 +104,7 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
           // Fallback to sample data if API fails
           setBookmarks(sampleBookmarks);
           // Only exclude special collections, keep user-defined ones
-          const excludedNames = ['All Bookmarks', 'Favorites', 'Recently Added'];
+          const excludedNames = ['All Resources', 'Favorites', 'Recently Added'];
           setStaticCollections(sampleCollections.filter(col => !excludedNames.includes(col.name)));
         });
     } else {
@@ -240,7 +240,7 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
         prevCollections.filter(col => col.id !== numericId)
       );
       
-      // Move bookmarks from deleted collection to "All Bookmarks" and update their collection name
+      // Move bookmarks from deleted collection to "All Resources" and update their collection name
       setBookmarks(prevBookmarks => 
         prevBookmarks.map(bookmark => 
           bookmark.collection === collectionToDelete.name
@@ -278,13 +278,13 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
     // Date-sorted bookmarks, primarily for 'Recently Added'
     const dateSortedBookmarks = [...sourceBookmarks].map(bm => ({ ...bm, parsedCreatedAt: new Date(bm.createdAt) })).filter(bm => !isNaN(bm.parsedCreatedAt.getTime())).sort((a, b) => b.parsedCreatedAt.getTime() - a.parsedCreatedAt.getTime());
 
-    // 'All Bookmarks' Collection - uses original bookmark order
+    // 'All Resources' Collection - uses original bookmark order
     // Find the icon from sampleCollections for consistency
-    const allBookmarksCollection = sampleCollections.find(col => col.name === 'All Bookmarks');
+    const allResourcesCollection = sampleCollections.find(col => col.name === 'All Resources');
     data['all'] = {
       id: 'all',
-      name: 'All Bookmarks',
-      icon: allBookmarksCollection?.icon || 'Bookmark',
+      name: 'All Resources',
+      icon: allResourcesCollection?.icon || 'Bookmark',
       items: [...sourceBookmarks], // Use sourceBookmarks (filtered or regular)
       count: sourceBookmarks.length,
     };
@@ -371,9 +371,9 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
       let targetCollectionName: string;
       
       if (collectionId === 'all') {
-        // Moving to "All Bookmarks" means we don't change the collection, just remove from current context
+        // Moving to "All Resources" means we don't change the collection, just remove from current context
         // For now, we'll keep the bookmark in its current collection
-        console.log(`Cannot move bookmark to "All Bookmarks" - it's a virtual collection`);
+        console.log(`Cannot move bookmark to "All Resources" - it's a virtual collection`);
         return;
       } else if (collectionId === 'favorites') {
         // For favorites, we toggle the favorite status rather than changing collection

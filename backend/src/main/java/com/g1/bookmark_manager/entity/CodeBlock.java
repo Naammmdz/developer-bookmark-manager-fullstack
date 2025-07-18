@@ -9,32 +9,44 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "collections")
+@Table(name = "code_blocks")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Collection {
+public class CodeBlock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false, length = 200)
+    private String title;
+    
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String code;
     
     @Column(nullable = false, length = 50)
-    private String icon;
+    private String language;
     
     @Column(columnDefinition = "TEXT")
     private String description;
     
+    @ElementCollection
+    @CollectionTable(name = "code_block_tags", joinColumns = @JoinColumn(name = "code_block_id"))
+    @Column(name = "tag")
+    private List<String> tags;
+    
+    @Column(name = "collection")
+    private String collection;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "collection_id")
+    private Collection collectionEntity;
+    
     @Column(name = "is_public")
     private Boolean isPublic = true;
     
-    @Column(name = "is_default")
-    private Boolean isDefault = false;
-    
-    @Column(name = "sort_order")
-    private Integer sortOrder = 0;
+    @Column(name = "is_favorite")
+    private Boolean isFavorite = false;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -46,12 +58,6 @@ public class Collection {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @OneToMany(mappedBy = "collectionEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Bookmark> bookmarks;
-    
-    @OneToMany(mappedBy = "collectionEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CodeBlock> codeBlocks;
-    
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -61,15 +67,5 @@ public class Collection {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-    
-    // Helper method to get bookmark count
-    public int getBookmarkCount() {
-        return bookmarks != null ? bookmarks.size() : 0;
-    }
-    
-    // Helper method to get code block count
-    public int getCodeBlockCount() {
-        return codeBlocks != null ? codeBlocks.size() : 0;
     }
 }

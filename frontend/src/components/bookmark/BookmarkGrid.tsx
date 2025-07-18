@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 // useBookmarks removed, functionality will come from props
 import OptimizedBookmarkCard from './OptimizedBookmarkCard';
 // FolderOpen removed as empty state is handled by parent
@@ -211,7 +211,7 @@ const BookmarkPreviewModal: React.FC<BookmarkPreviewModalProps> = ({ bookmark, o
             <div className="space-y-3 w-full max-w-sm">
               <button
                 onClick={openInNewTab}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -375,6 +375,28 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
 
   const activeBookmark = activeId ? bookmarks.find((bookmark) => bookmark.id === activeId) : null;
 
+  // Animation variants for smooth transitions
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+      },
+    },
+  };
+
   // Empty state is now handled by the parent component (BookmarksViewWithSidebar)
   // The `if (bookmarks.length === 0)` block has been removed.
 
@@ -406,27 +428,39 @@ const BookmarkGrid: React.FC<BookmarkGridProps> = ({ bookmarks, reorderBookmarks
         items={bookmarks.map((bookmark) => bookmark.id)}
         strategy={viewMode === 'grid' ? rectSortingStrategy : verticalListSortingStrategy}
       >
-          <div
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
             className={`w-full ${
               viewMode === 'grid' 
                 ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5' 
                 : 'flex flex-col gap-3'
             }`}
           >
-            {bookmarks.map((bookmark, index) => (
-              <SortableBookmarkItem
-                key={bookmark.id}
-                bookmark={bookmark}
-                index={index}
-                onPreview={() => setPreviewBookmark(bookmark)}
-                bulkMode={bulkMode}
-                checked={selectedIds.includes(bookmark.id)}
-                onCheck={() => toggleSelect(bookmark.id)}
-                viewMode={viewMode}
-                onBookmarkClick={onBookmarkClick}
-              />
-            ))}
-          </div>
+            <AnimatePresence mode="popLayout">
+              {bookmarks.map((bookmark, index) => (
+                <motion.div
+                  key={bookmark.id}
+                  variants={itemVariants}
+                  layout
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className={viewMode === 'list' ? 'w-full' : ''}
+                >
+                  <SortableBookmarkItem
+                    bookmark={bookmark}
+                    index={index}
+                    onPreview={() => setPreviewBookmark(bookmark)}
+                    bulkMode={bulkMode}
+                    checked={selectedIds.includes(bookmark.id)}
+                    onCheck={() => toggleSelect(bookmark.id)}
+                    viewMode={viewMode}
+                    onBookmarkClick={onBookmarkClick}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         </SortableContext>
       {previewBookmark && (
         // The onClick on this div might be too broad, consider if it should be on a specific backdrop element
