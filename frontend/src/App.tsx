@@ -208,12 +208,33 @@ const BookmarksViewWithSidebar: React.FC = () => {
     applyFilter,
   } = useBookmarks();
 
-  const { openModal: openCodeBlockModal } = useCodeBlocks();
+  const { openModal: openCodeBlockModal, updateCodeBlock } = useCodeBlocks();
   const { addRecentlyAccessed } = useRecentlyAccessed();
+  const [editingCodeBlock, setEditingCodeBlock] = React.useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
   const currentViewData = collectionData?.[activeCollection];
   const icon = currentViewData?.icon || 'folder';
   const name = currentViewData?.name || 'Loading...';
+
+  // Handle edit code block
+  const handleEditCodeBlock = (codeBlock) => {
+    setEditingCodeBlock(codeBlock);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEditedCodeBlock = (codeBlockData) => {
+    if (editingCodeBlock) {
+      updateCodeBlock(editingCodeBlock.id, codeBlockData);
+      setEditingCodeBlock(null);
+      setIsEditModalOpen(false);
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingCodeBlock(null);
+    setIsEditModalOpen(false);
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
@@ -275,6 +296,7 @@ const BookmarksViewWithSidebar: React.FC = () => {
         viewMode={viewMode}
         onOpenBookmarkModal={openModal}
         onOpenCodeBlockModal={openCodeBlockModal}
+        onEditCodeBlock={handleEditCodeBlock}
       />
 
       {/* Filter Modal */}
@@ -284,6 +306,16 @@ const BookmarksViewWithSidebar: React.FC = () => {
         onApplyFilter={applyFilter}
         currentFilters={activeFilters}
       />
+      
+      {/* Edit Code Block Modal */}
+      {isEditModalOpen && (
+        <AddCodeBlockModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveEditedCodeBlock}
+          editingCodeBlock={editingCodeBlock}
+        />
+      )}
     </div>
   );
 };

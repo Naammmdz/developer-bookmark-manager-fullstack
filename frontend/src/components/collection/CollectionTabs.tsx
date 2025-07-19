@@ -16,6 +16,7 @@ interface CollectionTabsProps {
   viewMode: 'grid' | 'list';
   onOpenBookmarkModal: () => void;
   onOpenCodeBlockModal: () => void;
+  onEditCodeBlock?: (codeBlock: CodeBlockType) => void;
 }
 
 const CollectionTabs: React.FC<CollectionTabsProps> = ({
@@ -26,6 +27,7 @@ const CollectionTabs: React.FC<CollectionTabsProps> = ({
   viewMode,
   onOpenBookmarkModal,
   onOpenCodeBlockModal,
+  onEditCodeBlock,
 }) => {
   const [activeTab, setActiveTab] = useState<'bookmarks' | 'codeblocks'>('bookmarks');
   
@@ -39,7 +41,6 @@ const CollectionTabs: React.FC<CollectionTabsProps> = ({
     codeBlocks,
     toggleFavorite,
     deleteCodeBlock,
-    editCodeBlock,
   } = useCodeBlocks();
   
   const { addRecentlyAccessed } = useRecentlyAccessed();
@@ -153,8 +154,9 @@ const CollectionTabs: React.FC<CollectionTabsProps> = ({
   };
 
   const handleEditCodeBlock = (codeBlock: CodeBlockType) => {
-    // Handle edit code block
-    editCodeBlock(codeBlock);
+    if (onEditCodeBlock) {
+      onEditCodeBlock(codeBlock);
+    }
   };
 
   const handleDeleteCodeBlock = (id: string) => {

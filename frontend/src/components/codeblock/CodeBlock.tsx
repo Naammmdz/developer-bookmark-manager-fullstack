@@ -6,7 +6,7 @@ import SyntaxHighlighter from '../ui/SyntaxHighlighter';
 
 interface CodeBlockProps {
   codeBlock: CodeBlockType;
-  onToggleFavorite: (id: string) => void;
+  onToggleFavorite: (id: number) => void;
   onEdit?: (codeBlock: CodeBlockType) => void;
   onDelete?: (id: string) => void;
   onClick?: (codeBlock: CodeBlockType) => void;
@@ -46,7 +46,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this code block?')) {
-      onDelete?.(codeBlock.id);
+      onDelete?.(codeBlock.id.toString());
     }
   };
 

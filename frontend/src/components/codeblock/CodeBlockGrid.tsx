@@ -5,7 +5,7 @@ import CodeBlock from './CodeBlock';
 
 interface CodeBlockGridProps {
   codeBlocks: CodeBlockType[];
-  onToggleFavorite: (id: string) => void;
+  onToggleFavorite: (id: number) => void;
   onEdit?: (codeBlock: CodeBlockType) => void;
   onDelete?: (id: string) => void;
   onCodeBlockClick?: (codeBlock: CodeBlockType) => void;
