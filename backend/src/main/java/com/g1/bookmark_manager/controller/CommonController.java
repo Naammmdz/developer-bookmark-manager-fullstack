@@ -1,5 +1,6 @@
 package com.g1.bookmark_manager.controller;
 
+import com.g1.bookmark_manager.repository.UserRepository;
 import com.g1.bookmark_manager.service.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/test")
 public class CommonController {
 
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private MailService mailService;
 
@@ -26,18 +29,13 @@ public class CommonController {
     }
 
     @PostMapping("/send-email")
-    public ResponseEntity<?> sendEmail(@RequestParam String toWho,
-                                       @RequestParam String subject,
-                                       @RequestParam String body,
-                                       @RequestParam(required = false) MultipartFile[] files,
-                                       @RequestParam String username,
-                                       @RequestParam String password,
-                                       Authentication authentication) {
-
+    public ResponseEntity<?> sendEmail(
+            @RequestParam(required = false) MultipartFile[] files,
+            Authentication authentication) {
         String authUsername = authentication.getName();
-        String authPassword = (String) authentication.getCredentials();
-
-        return ResponseEntity.ok(mailService.sendEmail(toWho, subject, authUsername, authPassword, files));
+        String name = userRepository.findNameByUserName(authUsername);
+        String email = userRepository.findEmailByUserName(authUsername);
+        return ResponseEntity.ok(mailService.sendEmail(email,"", authUsername, name,"", files));
 
     }
 }

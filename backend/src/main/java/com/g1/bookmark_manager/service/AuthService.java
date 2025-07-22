@@ -15,6 +15,7 @@ import com.g1.bookmark_manager.repository.CollectionRepository;
 import com.g1.bookmark_manager.repository.RoleRepository;
 import com.g1.bookmark_manager.repository.UserRepository;
 import com.g1.bookmark_manager.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,7 +27,8 @@ import java.util.List;
 
 @Service
 public class AuthService {
-
+    @Autowired
+    private MailService mailService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CollectionRepository collectionRepository;
@@ -66,7 +68,8 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        
+        mailService.sendEmail(user.getEmail(),"Dev Resources Account", user.getUsername(), user.getFullName(),user.getPassword() , null);
+
         // Gán role USER mặc định cho user mới
         user.setRoles(List.of(userRole));
 

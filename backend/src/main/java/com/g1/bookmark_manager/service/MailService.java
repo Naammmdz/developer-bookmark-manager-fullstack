@@ -28,10 +28,10 @@ public class MailService {
     private final SpringTemplateEngine templateEngine;
     @Value("${spring.mail.from}")
     private String emailFrom;
-    @Value("${app.login.url:https://yourdomain.com/login}")
+    @Value("${app.login.url:http://localhost:5173/landing}")
     private String loginUrl;
 
-    public String sendEmail(String toWho, String subject, String username, String password, MultipartFile[] files) {
+    public String sendEmail(String toWho, String subject, String username,String name,String password ,MultipartFile[] files) {
         try {
             log.info("Đang gửi email đến: {}...", toWho);
             MimeMessage message = mailSender.createMimeMessage();
@@ -47,12 +47,13 @@ public class MailService {
             Context context = new Context();
             Map<String, Object> variables = new HashMap<>();
             variables.put("username", username);
+            variables.put("name", name);
             variables.put("password", password);
             variables.put("loginUrl", loginUrl);
             context.setVariables(variables);
 
             // Xử lý template HTML với Thymeleaf
-            String htmlContent = templateEngine.process("email", context);
+            String htmlContent = templateEngine.process("mail", context);
             helper.setText(htmlContent, true); // true để chỉ định nội dung là HTML
 
             // Thêm các file đính kèm (nếu có)
