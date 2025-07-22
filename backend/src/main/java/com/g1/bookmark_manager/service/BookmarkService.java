@@ -3,9 +3,11 @@ package com.g1.bookmark_manager.service;
 import com.g1.bookmark_manager.dto.request.BookmarkRequest;
 import com.g1.bookmark_manager.dto.response.BookmarkResponse;
 import com.g1.bookmark_manager.entity.Bookmark;
+import com.g1.bookmark_manager.entity.Collection;
 import com.g1.bookmark_manager.entity.User;
 import com.g1.bookmark_manager.exception.ResourceNotFoundException;
 import com.g1.bookmark_manager.repository.BookmarkRepository;
+import com.g1.bookmark_manager.repository.CollectionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +29,9 @@ public class BookmarkService {
 
     @Autowired
     private AuthService authService;
+    
+    @Autowired
+    private CollectionRepository collectionRepository;
 
     public List<BookmarkResponse> getAllBookmarks(String username) {
         User user = authService.findByUsername(username);
@@ -61,6 +66,25 @@ public class BookmarkService {
         bookmark.setIsPublic(request.getIsPublic());
         bookmark.setFavicon(request.getFavicon());
         bookmark.setUser(user);
+        
+        // Set collection entity if collection name is provided
+        if (request.getCollection() != null && !request.getCollection().isEmpty()) {
+            try {
+                Collection collection = collectionRepository.findByNameAndUser(request.getCollection(), user)
+                        .orElse(null);
+                bookmark.setCollectionEntity(collection);
+            } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+                // Handle duplicate collections - use findAll and take the first one
+                List<Collection> collections = collectionRepository.findByUserOrderBySortOrder(user)
+                        .stream()
+                        .filter(c -> c.getName().equals(request.getCollection()))
+                        .limit(1)
+                        .collect(Collectors.toList());
+                if (!collections.isEmpty()) {
+                    bookmark.setCollectionEntity(collections.get(0));
+                }
+            }
+        }
 
         bookmark = bookmarkRepository.save(bookmark);
         return convertToResponse(bookmark);
@@ -83,6 +107,27 @@ public class BookmarkService {
         bookmark.setIsFavorite(request.getIsFavorite());
         bookmark.setIsPublic(request.getIsPublic());
         bookmark.setFavicon(request.getFavicon());
+        
+        // Set collection entity if collection name is provided
+        if (request.getCollection() != null && !request.getCollection().isEmpty()) {
+            try {
+                Collection collection = collectionRepository.findByNameAndUser(request.getCollection(), user)
+                        .orElse(null);
+                bookmark.setCollectionEntity(collection);
+            } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+                // Handle duplicate collections - use findAll and take the first one
+                List<Collection> collections = collectionRepository.findByUserOrderBySortOrder(user)
+                        .stream()
+                        .filter(c -> c.getName().equals(request.getCollection()))
+                        .limit(1)
+                        .collect(Collectors.toList());
+                if (!collections.isEmpty()) {
+                    bookmark.setCollectionEntity(collections.get(0));
+                }
+            }
+        } else {
+            bookmark.setCollectionEntity(null);
+        }
 
         bookmark = bookmarkRepository.save(bookmark);
         return convertToResponse(bookmark);
@@ -129,6 +174,26 @@ public class BookmarkService {
                     break;
                 case "collection":
                     bookmark.setCollection((String) value);
+                    // Also update collection entity
+                    if (value != null && !((String) value).isEmpty()) {
+                        try {
+                            Collection collection = collectionRepository.findByNameAndUser((String) value, user)
+                                    .orElse(null);
+                            bookmark.setCollectionEntity(collection);
+                        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+                            // Handle duplicate collections - use findAll and take the first one
+                            List<Collection> collections = collectionRepository.findByUserOrderBySortOrder(user)
+                                    .stream()
+                                    .filter(c -> c.getName().equals((String) value))
+                                    .limit(1)
+                                    .collect(Collectors.toList());
+                            if (!collections.isEmpty()) {
+                                bookmark.setCollectionEntity(collections.get(0));
+                            }
+                        }
+                    } else {
+                        bookmark.setCollectionEntity(null);
+                    }
                     break;
                 case "tags":
                     bookmark.setTags((List<String>) value);

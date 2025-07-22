@@ -57,6 +57,32 @@ export interface CollectionRequest {
   color?: string;
 }
 
+export interface CodeBlock {
+  id: number;
+  title: string;
+  code: string;
+  language: string;
+  description?: string;
+  tags?: string[];
+  collection?: string;
+  isPublic: boolean;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+  userEmail: string;
+}
+
+export interface CodeBlockRequest {
+  title: string;
+  code: string;
+  language: string;
+  description?: string;
+  tags?: string[];
+  collection?: string;
+  isPublic?: boolean;
+  isFavorite?: boolean;
+}
+
 export interface SearchFilter {
   query?: string;
   tags?: string[];

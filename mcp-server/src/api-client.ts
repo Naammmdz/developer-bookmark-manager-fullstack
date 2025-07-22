@@ -7,7 +7,9 @@ import {
   LoginRequest, 
   BookmarkRequest, 
   CollectionRequest, 
-  SearchFilter 
+  SearchFilter,
+  CodeBlock,
+  CodeBlockRequest
 } from './types.js';
 
 export class BookmarkManagerApiClient {
@@ -105,6 +107,71 @@ export class BookmarkManagerApiClient {
 
   async deleteCollection(id: number): Promise<void> {
     await this.api.delete(`/collections/${id}`);
+  }
+
+  // CodeBlock methods
+  async getCodeBlocks(): Promise<CodeBlock[]> {
+    const response = await this.api.get<CodeBlock[]>('/codeblocks');
+    return response.data;
+  }
+
+  async getCodeBlock(id: number): Promise<CodeBlock> {
+    const response = await this.api.get<CodeBlock>(`/codeblocks/${id}`);
+    return response.data;
+  }
+
+  async createCodeBlock(codeBlock: CodeBlockRequest): Promise<CodeBlock> {
+    const response = await this.api.post<CodeBlock>('/codeblocks', codeBlock);
+    return response.data;
+  }
+
+  async updateCodeBlock(id: number, codeBlock: Partial<CodeBlockRequest>): Promise<CodeBlock> {
+    const response = await this.api.put<CodeBlock>(`/codeblocks/${id}`, codeBlock);
+    return response.data;
+  }
+
+  async deleteCodeBlock(id: number): Promise<void> {
+    await this.api.delete(`/codeblocks/${id}`);
+  }
+
+  async toggleFavoriteCodeBlock(id: number): Promise<CodeBlock> {
+    const response = await this.api.patch<CodeBlock>(`/codeblocks/${id}/favorite`);
+    return response.data;
+  }
+
+  async searchCodeBlocks(query: string, collection?: string): Promise<CodeBlock[]> {
+    const params = new URLSearchParams();
+    params.append('q', query);
+    if (collection) {
+      params.append('collection', collection);
+    }
+    const response = await this.api.get<CodeBlock[]>(`/codeblocks/search?${params}`);
+    return response.data;
+  }
+
+  async getCodeBlocksByCollection(collection: string): Promise<CodeBlock[]> {
+    const response = await this.api.get<CodeBlock[]>(`/codeblocks/collection/${encodeURIComponent(collection)}`);
+    return response.data;
+  }
+
+  async getFavoriteCodeBlocks(): Promise<CodeBlock[]> {
+    const response = await this.api.get<CodeBlock[]>('/codeblocks/favorites');
+    return response.data;
+  }
+
+  async getCodeBlocksByLanguage(language: string): Promise<CodeBlock[]> {
+    const response = await this.api.get<CodeBlock[]>(`/codeblocks/language/${encodeURIComponent(language)}`);
+    return response.data;
+  }
+
+  async getCodeBlockCollections(): Promise<string[]> {
+    const response = await this.api.get<string[]>('/codeblocks/collections');
+    return response.data;
+  }
+
+  async getCodeBlockCountByCollection(collection: string): Promise<number> {
+    const response = await this.api.get<number>(`/codeblocks/collection/${encodeURIComponent(collection)}/count`);
+    return response.data;
   }
 
   // User methods (admin only)

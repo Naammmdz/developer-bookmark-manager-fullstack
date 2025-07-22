@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "developer-resources": {
+      "command": "node",
+      "args": ["E:\\developer-bookmark-manager-fullstack\\mcp-server\\dist\\index.js"],
+      "env": {
+        "BOOKMARK_API_BASE_URL": "http://localhost:8080/api",
+        "BOOKMARK_API_USERNAME": "admin",
+        "BOOKMARK_API_PASSWORD": "admin123"
+      }
+    }
+  }
+}
