@@ -212,10 +212,12 @@ public class BookmarkService {
         );
     }
 
-    // filter theo specification
-    public List<BookmarkResponse> filterBookmarks(String title, String url, Boolean isFavorite, String tag, String sortBy) {
-        Specification<Bookmark> spec = (root, query, cb) -> cb.conjunction();
-        // Đoạn code trên tạo một Specification cơ bản mà không có điều kiện nào.
+
+    public List<BookmarkResponse> filterBookmarks(String title, String url, Boolean isFavorite, String tag, String sortBy, String username) {
+        User user = authService.findByUsername(username);
+        
+        Specification<Bookmark> spec = (root, query, cb) -> cb.equal(root.get("user"), user);
+        // Đoạn code trên tạo một Specification cơ bản với điều kiện user.
         if (title != null && !title.isEmpty()) {
             spec = spec.and(((root, query, cb)
                     -> cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%")));
@@ -232,6 +234,12 @@ public class BookmarkService {
             spec = spec.and(((root, query, cb)
                     -> cb.isMember(tag, root.get("tags"))));
         }
+        
+        // Default sortBy if not provided
+        if (sortBy == null || sortBy.isEmpty()) {
+            sortBy = "createdAt,desc";
+        }
+        
         String[] sortDetails = sortBy.split(",");
         String sortByProperty = sortDetails[0];
         Sort.Direction sortDirection = Sort.Direction.ASC;

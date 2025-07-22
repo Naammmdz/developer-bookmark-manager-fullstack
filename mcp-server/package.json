@@ -1,0 +1,30 @@
+{
+  "name": "bookmark-manager-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Bookmark Manager Application",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "watch": "tsx --watch src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "bookmark-manager",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "axios": "^1.10.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  }
+}

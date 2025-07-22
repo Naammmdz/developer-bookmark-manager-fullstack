@@ -67,7 +67,11 @@ body {
 
 @layer utilities {
   .glass {
-    @apply bg-card border border-border rounded;
+    @apply bg-card border border-border rounded-xl;
+  }
+
+  .glass-border {
+    @apply border-2 border-white/20 hover:border-white/30 transition-colors duration-200;
   }
 
   .glass-hover {
@@ -131,6 +135,20 @@ input:-webkit-autofill:focus {
   }
 }
 
+/* RetroGrid animation */
+@keyframes grid {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-grid {
+  animation: grid 15s linear infinite;
+}
+
 .sidebar {
   position: fixed !important;
   left: 0 !important;
@@ -161,4 +179,118 @@ input:-webkit-autofill:focus {
   min-height: 100vh !important; /* Ensure it takes full height */
   display: flex !important;
   flex-direction: column !important;
+}
+
+/* Custom cursor styles */
+.custom-cursor {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23ff6b6b" stroke="%23ffffff" stroke-width="1"/></svg>'), auto;
+}
+
+.custom-cursor:hover {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%234ecdc4" stroke="%23ffffff" stroke-width="1"/></svg>'), auto;
+}
+
+/* Different cursor types with custom colors */
+.custom-cursor button {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23a8e6cf" stroke="%23ffffff" stroke-width="1"/></svg>'), pointer;
+}
+
+/* Enhanced drag overlay animations */
+.drag-overlay-enter {
+  animation: dragOverlayEnter 0.2s ease-out;
+}
+
+.drag-overlay-exit {
+  animation: dragOverlayExit 0.15s ease-in;
+}
+
+@keyframes dragOverlayEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes dragOverlayExit {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+/* Pulse animation for drag indicator */
+@keyframes dragPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.drag-pulse {
+  animation: dragPulse 1.5s ease-in-out infinite;
+}
+
+/* Floating animation for drag overlay */
+@keyframes dragFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-2px);
+  }
+}
+
+.drag-float {
+  animation: dragFloat 2s ease-in-out infinite;
+}
+
+/* Enhanced cursor following drag overlay */
+.drag-cursor-follow {
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Enhanced drag follow animation */
+@keyframes dragFollow {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8) rotate(-2deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(0.95) rotate(1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9) rotate(-1deg);
+    opacity: 0.95;
+  }
+}
+
+.animate-drag-follow {
+  animation: dragFollow 2s ease-in-out infinite;
+}
+
+.custom-cursor a {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23ffd93d" stroke="%23ffffff" stroke-width="1"/></svg>'), pointer;
+}
+
+.custom-cursor input,
+.custom-cursor textarea {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2" height="20" viewBox="0 0 2 20"><rect width="2" height="20" fill="%23ff6b6b"/></svg>'), text;
+}
+
+.custom-cursor select {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M0 0l6 18 2-6 6-2z" fill="%23ba68c8" stroke="%23ffffff" stroke-width="1"/></svg>'), pointer;
 }

@@ -1,7 +1,9 @@
 package com.g1.bookmark_manager.service;
 
+import com.g1.bookmark_manager.dto.request.ChangePasswordRequest;
 import com.g1.bookmark_manager.dto.request.LoginRequest;
 import com.g1.bookmark_manager.dto.request.RegisterRequest;
+import com.g1.bookmark_manager.dto.request.UpdateUserRequest;
 import com.g1.bookmark_manager.dto.response.AuthResponse;
 import com.g1.bookmark_manager.entity.Collection;
 import com.g1.bookmark_manager.entity.Role;
@@ -133,5 +135,45 @@ public class AuthService {
             
             collectionRepository.save(collection);
         }
+    }
+
+    public User updateUser(String username, UpdateUserRequest request) {
+        User user = findByUsername(username);
+
+        // Check if new username already exists (if changed)
+        if (!user.getUsername().equals(request.getUsername()) &&
+                userRepository.existsByUsername(request.getUsername())) {
+            throw new DuplicateResourceException("Username already exists");
+        }
+
+        // Check if new email already exists (if changed)
+        if (!user.getEmail().equals(request.getEmail()) &&
+                userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+
+        // Update user information
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setFullName(request.getFullName());
+
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+
+        return userRepository.save(user);
+    }
+
+    public void changePassword(String username, ChangePasswordRequest request) {
+        User user = findByUsername(username);
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidDataException("Current password is incorrect");
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

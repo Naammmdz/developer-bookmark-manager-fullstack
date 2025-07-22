@@ -49,6 +49,9 @@ public class Collection {
     @OneToMany(mappedBy = "collectionEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Bookmark> bookmarks;
     
+    @OneToMany(mappedBy = "collectionEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CodeBlock> codeBlocks;
+    
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -63,5 +66,10 @@ public class Collection {
     // Helper method to get bookmark count
     public int getBookmarkCount() {
         return bookmarks != null ? bookmarks.size() : 0;
+    }
+    
+    // Helper method to get code block count
+    public int getCodeBlockCount() {
+        return codeBlocks != null ? codeBlocks.size() : 0;
     }
 }

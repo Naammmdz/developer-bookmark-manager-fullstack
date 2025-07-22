@@ -1,3 +1,17 @@
+export interface CodeBlock {
+  id: number;
+  title: string;
+  language: string;
+  code: string;
+  description?: string;
+  tags: string[];
+  collection: string;
+  isPublic: boolean;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Bookmark {
   id: number;
   title: string;
@@ -16,6 +30,7 @@ export interface Collection {
   name: string;
   icon: string;
   count: number;
+  isDefault?: boolean;
 }
 
 export interface User {
@@ -24,7 +39,7 @@ export interface User {
   username: string;
   fullName: string;
   avatarUrl: string | null;
-  roles: string[];
+  role: string;
   active: boolean;
   createdAt: string;
   updatedAt: string;

@@ -4,6 +4,7 @@ import { Bookmark } from 'lucide-react';
 import DiscordSvg from '../../imgs/discord.svg';
 import TwitterSvg from '../../imgs/x.svg';
 import GithubSvg from '../../imgs/github-dark.svg';
+import Logo from '../../imgs/Logo.png';
 
 const Footer: React.FC = () => {
   const footerNavs = [
@@ -12,7 +13,7 @@ const Footer: React.FC = () => {
       items: [
         {
           href: '/',
-          name: 'Bookmark Manager'
+          name: 'DevPin'
         },
         {
           href: '#pricing',
@@ -36,7 +37,7 @@ const Footer: React.FC = () => {
           name: 'Twitter'
         },
         {
-          href: 'mailto:hello@devbookmarks.com',
+          href: 'mailto:hello@devpin.com',
           name: 'Email'
         }
       ]
@@ -80,12 +81,12 @@ const Footer: React.FC = () => {
         <div className="gap-4 p-4 px-8 py-16 sm:pb-16 md:flex md:justify-between">
           <div className="mb-12 flex flex-col gap-4">
             <Link to="/landing" className="flex items-center gap-2">
-              <Bookmark className="size-8" />
+              <img src={Logo} alt="DevPin" className="h-8 w-auto" />
               <span className="self-center whitespace-nowrap text-2xl font-semibold dark:text-white">
-                Dev Bookmarks
+                DevPin
               </span>
             </Link>
-            <p className="max-w-xs">Bookmark Manager for Developers</p>
+            <p className="max-w-xs">Resource Manager for Developers</p>
           </div>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-10">
             {footerNavs.map((nav, index) => (
@@ -126,7 +127,7 @@ const Footer: React.FC = () => {
           <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
             Copyright ©{' '}
             {new Date().getFullYear()}{' '}
-            <a href="/" className="cursor-pointer">Dev Bookmarks</a>
+            <a href="/" className="cursor-pointer">DevPin</a>
             . All Rights Reserved.
           </span>
         </div>

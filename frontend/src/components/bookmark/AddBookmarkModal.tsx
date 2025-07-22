@@ -36,18 +36,35 @@ const modal = {
 };
 
 const AddBookmarkModal: React.FC = () => {
-  const { isModalOpen, closeModal, addBookmark, collections } = useBookmarks();
+  const { isModalOpen, closeModal, addBookmark, collections, activeCollection, collectionData } = useBookmarks();
+  
+  // Get the current collection name based on activeCollection
+  const getCurrentCollectionName = () => {
+    if (activeCollection === 'all' || activeCollection === 'favorites' || activeCollection === 'recently_added') {
+      // For special collections, default to first regular collection or 'Uncategorized'
+      return collections.length > 0 ? collections[0].name : 'Uncategorized';
+    }
+    // For regular collections, find the collection name
+    const currentCollection = collectionData?.[activeCollection];
+    return currentCollection?.name || (collections.length > 0 ? collections[0].name : 'Uncategorized');
+  };
   
   const [formData, setFormData] = useState({
     title: '',
     url: '',
     description: '',
     tags: [''],
-    collection: collections.length > 0 ? collections[0].name : '',
+    collection: 'Uncategorized', // Start with default, will be updated by useEffect
     isPublic: true,
     isFavorite: false,
     favicon: ''
   });
+  
+  // Update collection when collections load or activeCollection changes
+  React.useEffect(() => {
+    const newCollection = getCurrentCollectionName();
+    setFormData(prev => ({ ...prev, collection: newCollection }));
+  }, [collections, activeCollection, collectionData]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -97,7 +114,7 @@ const AddBookmarkModal: React.FC = () => {
       url: '',
       description: '',
       tags: [''],
-      collection: collections.length > 0 ? collections[0].name : '',
+      collection: getCurrentCollectionName(),
       isPublic: true,
       isFavorite: false,
       favicon: ''
@@ -228,15 +245,33 @@ const AddBookmarkModal: React.FC = () => {
                       value={formData.collection}
                       onChange={handleChange}
                       className="w-full p-3 rounded-lg bg-white/5 border border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white/90 outline-none transition-all"
+                      style={{
+                        colorScheme: 'dark'
+                      }}
                     >
                       {collections.length > 0 ? (
                         collections.map((collection) => (
-                          <option key={collection.id} value={collection.name}>
+                          <option 
+                            key={collection.id} 
+                            value={collection.name}
+                            style={{
+                              backgroundColor: '#1f1f1f',
+                              color: '#ffffff'
+                            }}
+                          >
                             {collection.name}
                           </option>
                         ))
                       ) : (
-                        <option value="">No collections available</option>
+                        <option 
+                          value=""
+                          style={{
+                            backgroundColor: '#1f1f1f',
+                            color: '#ffffff'
+                          }}
+                        >
+                          No collections available
+                        </option>
                       )}
                     </select>
                   </div>

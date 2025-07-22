@@ -26,3 +26,24 @@ export const fetchCurrentUser = async (): Promise<AuthResponse> => {
 export const logout = async (): Promise<void> => {
   await api.post('/auth/logout');
 };
+
+export interface UpdateUserRequest {
+  username?: string;
+  email?: string;
+  fullName?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export const updateProfile = async (request: UpdateUserRequest): Promise<AuthResponse> => {
+  const { data } = await api.put<AuthResponse>('/auth/profile', request);
+  return data;
+};
+
+export const changePassword = async (request: ChangePasswordRequest): Promise<string> => {
+  const { data } = await api.put<string>('/auth/change-password', request);
+  return data;
+};

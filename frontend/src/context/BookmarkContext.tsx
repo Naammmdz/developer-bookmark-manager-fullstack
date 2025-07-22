@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import { sampleBookmarks, sampleCollections } from '../data/sampleData';
 import { Bookmark, Collection } from '../types';
 import { getCollections, addCollection as apiAddCollection, deleteCollection as apiDeleteCollection } from '../api/collectionApi';
-import { getBookmarks, addBookmark as apiAddBookmark, deleteBookmark as apiDeleteBookmark, updateBookmark as apiUpdateBookmark } from '../api/bookmarkApi';
+import { getBookmarks, addBookmark as apiAddBookmark, deleteBookmark as apiDeleteBookmark, updateBookmark as apiUpdateBookmark, filterBookmarks as apiFilterBookmarks } from '../api/bookmarkApi';
 
 // New type for collection with its items
 export interface CollectionWithItems extends Omit<Collection, 'id'> {
@@ -14,6 +14,15 @@ export interface CollectionWithItems extends Omit<Collection, 'id'> {
 
 // View mode type
 export type ViewMode = 'grid' | 'list';
+
+// Filter params type
+export interface FilterParams {
+  title?: string;
+  url?: string;
+  isFavorite?: boolean;
+  tag?: string;
+  sortBy?: string;
+}
 
 // Updated Context Type
 interface BookmarkContextType {
@@ -34,11 +43,20 @@ interface BookmarkContextType {
   deleteBookmark: (id: number) => void;
   deleteBookmarks: (ids: number[]) => void;
   reorderBookmarks: (movedBookmarkId: number, targetBookmarkId: number | null) => void; // Updated signature
+  moveBookmarkToCollection: (bookmarkId: number, collectionId: string) => void; // Added for moving bookmarks to collections
   addCollection: (name: string, icon: string) => void; // Added for adding new collections
   deleteCollection: (collectionId: string) => void; // Added for deleting collections
   isAddCollectionModalOpen: boolean;
   openAddCollectionModal: () => void;
   closeAddCollectionModal: () => void;
+  // Filter functionality
+  activeFilters: FilterParams;
+  setActiveFilters: (filters: FilterParams) => void;
+  isFilterModalOpen: boolean;
+  openFilterModal: () => void;
+  closeFilterModal: () => void;
+  applyFilter: (filters: FilterParams) => void;
+  filteredBookmarks: Bookmark[]; // Filtered bookmarks result
 }
 
 const BookmarkContext = createContext<BookmarkContextType | undefined>(undefined);
@@ -65,6 +83,10 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid'); // Added view mode state
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isAddCollectionModalOpen, setIsAddCollectionModalOpen] = useState<boolean>(false);
+  // Filter state
+  const [activeFilters, setActiveFilters] = useState<FilterParams>({});
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
+  const [filteredBookmarks, setFilteredBookmarks] = useState<Bookmark[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -81,7 +103,8 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
           console.error("Failed to fetch data: ", error);
           // Fallback to sample data if API fails
           setBookmarks(sampleBookmarks);
-          const excludedNames = ['All Bookmarks', 'Favorites', 'Recently Added'];
+          // Only exclude special collections, keep user-defined ones
+          const excludedNames = ['All Resources', 'Favorites', 'Recently Added'];
           setStaticCollections(sampleCollections.filter(col => !excludedNames.includes(col.name)));
         });
     } else {
@@ -161,6 +184,31 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
   const openAddCollectionModal = () => setIsAddCollectionModalOpen(true);
   const closeAddCollectionModal = () => setIsAddCollectionModalOpen(false);
 
+  // Filter functions
+  const openFilterModal = () => setIsFilterModalOpen(true);
+  const closeFilterModal = () => setIsFilterModalOpen(false);
+
+  const applyFilter = async (filters: FilterParams) => {
+    try {
+      setActiveFilters(filters);
+      
+      // Check if there are any active filters
+      const hasActiveFilters = Object.values(filters).some(value => 
+        value !== undefined && value !== null && value !== ''
+      );
+      
+      if (hasActiveFilters) {
+        const results = await apiFilterBookmarks(filters);
+        setFilteredBookmarks(results);
+      } else {
+        setFilteredBookmarks([]);
+      }
+    } catch (error) {
+      console.error('Failed to apply filters:', error);
+      setFilteredBookmarks([]);
+    }
+  };
+
   const addCollection = async (name: string, icon: string) => {
     try {
       const newCollection = await apiAddCollection({ name, icon });
@@ -192,7 +240,7 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
         prevCollections.filter(col => col.id !== numericId)
       );
       
-      // Move bookmarks from deleted collection to "All Bookmarks" and update their collection name
+      // Move bookmarks from deleted collection to "All Resources" and update their collection name
       setBookmarks(prevBookmarks => 
         prevBookmarks.map(bookmark => 
           bookmark.collection === collectionToDelete.name
@@ -214,23 +262,35 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
   const collectionData = useMemo(() => {
     const data: { [key: string]: CollectionWithItems } = {};
     const recentLimit = 10;
+    
+    console.log('CollectionData Processing - bookmarks:', bookmarks.length);
+    console.log('CollectionData Processing - staticCollections:', staticCollections.length);
+    console.log('CollectionData Processing - staticCollections:', staticCollections);
+    
+    // Use filtered bookmarks if filters are active, otherwise use regular bookmarks
+    const hasActiveFilters = Object.values(activeFilters).some(value => 
+      value !== undefined && value !== null && value !== ''
+    );
+    const sourceBookmarks = hasActiveFilters ? filteredBookmarks : bookmarks;
+    
+    console.log('CollectionData Processing - sourceBookmarks:', sourceBookmarks.length);
 
     // Date-sorted bookmarks, primarily for 'Recently Added'
-    const dateSortedBookmarks = [...bookmarks].map(bm => ({ ...bm, parsedCreatedAt: new Date(bm.createdAt) })).filter(bm => !isNaN(bm.parsedCreatedAt.getTime())).sort((a, b) => b.parsedCreatedAt.getTime() - a.parsedCreatedAt.getTime());
+    const dateSortedBookmarks = [...sourceBookmarks].map(bm => ({ ...bm, parsedCreatedAt: new Date(bm.createdAt) })).filter(bm => !isNaN(bm.parsedCreatedAt.getTime())).sort((a, b) => b.parsedCreatedAt.getTime() - a.parsedCreatedAt.getTime());
 
-    // 'All Bookmarks' Collection - uses original bookmark order
+    // 'All Resources' Collection - uses original bookmark order
     // Find the icon from sampleCollections for consistency
-    const allBookmarksCollection = sampleCollections.find(col => col.name === 'All Bookmarks');
+    const allResourcesCollection = sampleCollections.find(col => col.name === 'All Resources');
     data['all'] = {
       id: 'all',
-      name: 'All Bookmarks',
-      icon: allBookmarksCollection?.icon || 'Bookmark',
-      items: [...bookmarks], // Use original bookmarks array (maintains user-defined order)
-      count: bookmarks.length,
+      name: 'All Resources',
+      icon: allResourcesCollection?.icon || 'Bookmark',
+      items: [...sourceBookmarks], // Use sourceBookmarks (filtered or regular)
+      count: sourceBookmarks.length,
     };
 
     // 'Favorites' Collection - uses original bookmark order among favorites
-    const favoriteItems = bookmarks.filter(bm => bm.isFavorite); // Filter from original bookmarks
+    const favoriteItems = sourceBookmarks.filter(bm => bm.isFavorite); // Filter from sourceBookmarks
     const favoritesCollection = sampleCollections.find(col => col.name === 'Favorites');
     data['favorites'] = {
       id: 'favorites',
@@ -252,9 +312,10 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
 
     // Process static collections from sampleCollections - uses original bookmark order within each collection
     staticCollections.forEach(collection => {
-      // Filter bookmarks by collection NAME from the original bookmarks array
-      const collectionItems = bookmarks.filter(bm => bm.collection === collection.name);
+      // Filter bookmarks by collection NAME from the sourceBookmarks array
+      const collectionItems = sourceBookmarks.filter(bm => bm.collection === collection.name);
       const key = collection.id.toString();
+      
       data[key] = {
         id: key, // Use the stringified ID as the object's ID
         name: collection.name,
@@ -265,7 +326,7 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
     });
 
     return data;
-  }, [bookmarks, staticCollections]);
+  }, [bookmarks, staticCollections, activeFilters, filteredBookmarks]);
 
   // Reorder bookmarks - this operates on the base `bookmarks` array.
   // `collectionData` will update automatically due to `useMemo` dependency on `bookmarks`.
@@ -297,6 +358,59 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
     });
   };
 
+  const moveBookmarkToCollection = async (bookmarkId: number, collectionId: string) => {
+    try {
+      // Find the bookmark to move
+      const bookmark = bookmarks.find(bm => bm.id === bookmarkId);
+      if (!bookmark) {
+        console.warn(`moveBookmarkToCollection: bookmark with id ${bookmarkId} not found`);
+        return;
+      }
+
+      // Find the target collection
+      let targetCollectionName: string;
+      
+      if (collectionId === 'all') {
+        // Moving to "All Resources" means we don't change the collection, just remove from current context
+        // For now, we'll keep the bookmark in its current collection
+        console.log(`Cannot move bookmark to "All Resources" - it's a virtual collection`);
+        return;
+      } else if (collectionId === 'favorites') {
+        // For favorites, we toggle the favorite status rather than changing collection
+        toggleFavorite(bookmarkId);
+        return;
+      } else if (collectionId === 'recently_added') {
+        // Recently added is a virtual collection, cannot move bookmarks to it
+        console.log(`Cannot move bookmark to "Recently Added" - it's a virtual collection`);
+        return;
+      } else {
+        // Find the collection by ID
+        const targetCollection = staticCollections.find(col => col.id.toString() === collectionId);
+        if (targetCollection) {
+          targetCollectionName = targetCollection.name;
+        } else {
+          console.warn(`moveBookmarkToCollection: target collection with id ${collectionId} not found`);
+          return;
+        }
+      }
+
+      // Update the bookmark with the new collection
+      const updatedBookmark = await apiUpdateBookmark(bookmarkId, { collection: targetCollectionName });
+      
+      // Update the local state
+      setBookmarks(prevBookmarks => 
+        prevBookmarks.map(bm => 
+          bm.id === bookmarkId ? updatedBookmark : bm
+        )
+      );
+      
+      console.log(`Moved bookmark "${bookmark.title}" to collection "${targetCollectionName}"`);
+    } catch (error) {
+      console.error('Failed to move bookmark to collection:', error);
+      // You could add error handling here (e.g., show a toast)
+    }
+  };
+
   const value = {
     bookmarks, // Raw bookmarks
     collections: staticCollections, // Original collection definitions
@@ -315,12 +429,20 @@ export const BookmarkProvider = ({ children }: BookmarkProviderProps) => {
     deleteBookmark,
     deleteBookmarks,
     reorderBookmarks,
+    moveBookmarkToCollection, // Added for drag and drop to collections
     addCollection, // Added to context value
     deleteCollection, // Added to context value
     isAddCollectionModalOpen,
     openAddCollectionModal,
     closeAddCollectionModal,
-    // Removed: filteredBookmarks, selectedTag, setSelectedTag, selectedDateRange, setSelectedDateRange, availableTags
+    // Filter functionality
+    activeFilters,
+    setActiveFilters,
+    isFilterModalOpen,
+    openFilterModal,
+    closeFilterModal,
+    applyFilter,
+    filteredBookmarks,
   };
 
   return (

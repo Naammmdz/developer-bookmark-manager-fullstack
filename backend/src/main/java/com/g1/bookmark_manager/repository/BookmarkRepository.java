@@ -2,6 +2,8 @@ package com.g1.bookmark_manager.repository;
 
 import com.g1.bookmark_manager.entity.Bookmark;
 import com.g1.bookmark_manager.entity.User;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -28,4 +30,6 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long>, JpaSp
     
     @Query("SELECT b FROM Bookmark b JOIN b.tags t WHERE b.user = :user AND LOWER(t) LIKE LOWER(CONCAT('%', :tag, '%'))")
     List<Bookmark> findByUserAndTagsContaining(@Param("user") User user, @Param("tag") String tag);
+
+    List<Bookmark> findAll(Specification<Bookmark> spec, Sort sort);
 }
