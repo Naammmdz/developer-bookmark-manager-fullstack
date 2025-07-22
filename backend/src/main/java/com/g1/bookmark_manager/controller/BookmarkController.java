@@ -145,6 +145,7 @@ public class BookmarkController {
             @RequestParam(required = false) String tag,
             @RequestParam(required = false) String sortBy
     ) {
+
         String username = getCurrentUsername();
         List<BookmarkResponse> bookmarks = bookmarkService.filterBookmarks(title, url, isFavorite, tag, sortBy, username);
         return ResponseEntity.ok(bookmarks);
