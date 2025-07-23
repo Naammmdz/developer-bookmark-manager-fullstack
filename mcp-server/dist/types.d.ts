@@ -47,8 +47,10 @@ export interface BookmarkRequest {
 }
 export interface CollectionRequest {
     name: string;
+    icon: string;
     description?: string;
-    color?: string;
+    isPublic?: boolean;
+    sortOrder?: number;
 }
 export interface CodeBlock {
     id: number;

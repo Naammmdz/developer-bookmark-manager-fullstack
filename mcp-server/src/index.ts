@@ -127,10 +127,12 @@ class DeveloperResourcesMCPServer {
               type: 'object',
               properties: {
                 name: { type: 'string', description: 'Collection name' },
+                icon: { type: 'string', description: 'Collection icon' },
                 description: { type: 'string', description: 'Collection description' },
-                color: { type: 'string', description: 'Collection color' }
+                isPublic: { type: 'boolean', description: 'Whether collection is public' },
+                sortOrder: { type: 'number', description: 'Sort order for collection' }
               },
-              required: ['name'],
+              required: ['name', 'icon'],
               additionalProperties: false
             }
           },

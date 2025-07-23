@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBookmarks - Quick Save</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">📚</span>
+                <span class="logo-text">DevBookmarks</span>
+            </div>
+            <div class="header-actions">
+                <div class="status" id="status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Connecting...</span>
+                </div>
+                <div class="view-tabs" id="viewTabs" style="display: none;">
+                    <button class="tab-btn active" data-view="add">Add</button>
+                    <button class="tab-btn" data-view="browse">Browse</button>
+                    <button class="tab-btn" data-view="collections">Collections</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="login-section" id="loginSection" style="display: none;">
+            <h3>Login Required</h3>
+            <div class="form-group">
+                <input type="text" id="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <button class="btn btn-primary" id="loginBtn">Login</button>
+            <div class="error-message" id="loginError"></div>
+        </div>
+
+        <div class="bookmark-section" id="bookmarkSection" style="display: none;">
+            <div class="page-info">
+                <div class="page-title" id="pageTitle">Loading...</div>
+                <div class="page-url" id="pageUrl">Loading...</div>
+            </div>
+
+            <div class="form-group">
+                <label for="bookmarkTitle">Title</label>
+                <input type="text" id="bookmarkTitle" placeholder="Bookmark title">
+            </div>
+
+            <div class="form-group">
+                <label for="bookmarkDescription">Description</label>
+                <textarea id="bookmarkDescription" placeholder="Optional description" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="bookmarkCollection">Collection</label>
+                <select id="bookmarkCollection">
+                    <option value="">Loading collections...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="bookmarkTags">Tags</label>
+                <input type="text" id="bookmarkTags" placeholder="Separate tags with commas">
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" id="saveBtn">
+                    <span class="btn-text">Save Bookmark</span>
+                    <span class="btn-loader" style="display: none;">Saving...</span>
+                </button>
+                <button class="btn btn-secondary" id="openAppBtn">Open App</button>
+            </div>
+
+            <div class="success-message" id="successMessage" style="display: none;">
+                <span class="success-icon">✓</span>
+                <span>Bookmark saved successfully!</span>
+            </div>
+
+            <div class="error-message" id="errorMessage" style="display: none;"></div>
+        </div>
+
+        <!-- Browse Bookmarks Section -->
+        <div class="browse-section" id="browseSection" style="display: none;">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search bookmarks...">
+                <button class="btn btn-secondary" id="searchBtn">🔍</button>
+            </div>
+            
+            <div class="filter-bar">
+                <select id="collectionFilter">
+                    <option value="">All Collections</option>
+                </select>
+                <select id="sortFilter">
+                    <option value="recent">Recently Added</option>
+                    <option value="title">Title A-Z</option>
+                    <option value="url">URL</option>
+                </select>
+            </div>
+            
+            <div class="bookmarks-list" id="bookmarksList">
+                <div class="loading" id="bookmarksLoading">Loading bookmarks...</div>
+                <div class="no-bookmarks" id="noBookmarks" style="display: none;">
+                    <p>No bookmarks found</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collections Management Section -->
+        <div class="collections-section" id="collectionsSection" style="display: none;">
+            <div class="section-header">
+                <h3>Collections</h3>
+                <button class="btn btn-primary btn-sm" id="addCollectionBtn">+ Add</button>
+            </div>
+            
+            <div class="collections-list" id="collectionsList">
+                <div class="loading" id="collectionsLoading">Loading collections...</div>
+            </div>
+            
+            <!-- Add Collection Modal -->
+            <div class="modal" id="addCollectionModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4>Add Collection</h4>
+                        <button class="close-btn" id="closeCollectionModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="collectionName">Name</label>
+                            <input type="text" id="collectionName" placeholder="Collection name">
+                        </div>
+                        <div class="form-group">
+                            <label for="collectionDescription">Description</label>
+                            <textarea id="collectionDescription" placeholder="Optional description" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="collectionIcon">Icon</label>
+                            <select id="collectionIcon">
+                                <option value="folder">📁 Folder</option>
+                                <option value="bookmark">🔖 Bookmark</option>
+                                <option value="star">⭐ Star</option>
+                                <option value="heart">❤️ Heart</option>
+                                <option value="code">💻 Code</option>
+                                <option value="book">📚 Book</option>
+                                <option value="tool">🔧 Tool</option>
+                                <option value="idea">💡 Idea</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" id="cancelCollectionBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveCollectionBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section" id="settingsSection" style="display: none;">
+            <h3>Settings</h3>
+            <div class="form-group">
+                <label for="apiUrl">API URL</label>
+                <input type="text" id="apiUrl" placeholder="http://localhost:8080">
+            </div>
+            <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+        </div>
+
+        <div class="footer">
+            <button class="btn btn-link" id="settingsToggle">⚙️ Settings</button>
+            <button class="btn btn-link" id="logoutBtn" style="display: none;">🚪 Logout</button>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
