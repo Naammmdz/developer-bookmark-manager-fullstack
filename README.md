@@ -1,11 +1,25 @@
 # Developer Bookmark Manager 🔖
 
-A web application that helps developers organize, store, and share programming resources efficiently.
+<div align="center">
+  <img src="docs/logo.png" alt="Developer Bookmark Manager Logo" width="200"/>
+  <br/>
+  <br/>
+</div>
+
+A comprehensive web application that assists developers in organizing, storing, and sharing valuable programming resources efficiently.
+
+## 📸 Screenshots
+
+### Dark Theme
+![Hero Image Dark](docs/hero-dark.png)
+
+### Light Theme
+![Hero Image Light](docs/hero-light.png)
 
 ## 🌟 Key Features
 
-- **Bookmark Management**: CRUD operations for bookmarks and collections
-- **Smart Tagging**: Organize bookmarks with custom tags
+- **Bookmark Management**: Easily perform CRUD operations on both bookmarks and collections.
+- **Smart Tagging**: Organize your bookmarks using intuitive custom tags.
 - **Link Validation**: Automatic checking for dead links
 - **Import/Export**: JSON format support for data portability
 - **Search & Filter**: Find bookmarks by title, tags, or collection
@@ -14,26 +28,26 @@ A web application that helps developers organize, store, and share programming r
 ## 🛠️ Tech Stack
 
 ### Backend
-- Java 17+
-- Spring Boot 3.x
-- Spring Security with JWT
-- Spring Data JPA
-- MSSQL
-- Maven
+- **Java 17+** - Core programming language
+- **Spring Boot 3.x** - Application framework
+- **Spring Security with JWT** - Authentication & authorization
+- **Spring Data JPA** - Data persistence layer
+- **Microsoft SQL Server** - Database management system
+- **Maven** - Build automation and dependency management
 
 ### Frontend
-- React 18+
-- TypeScript
-- Tailwind CSS
-- Axios
-- React Query
+- **React 18+** - UI library for building user interfaces
+- **TypeScript** - Type-safe JavaScript development
+- **Tailwind CSS** - Utility-first CSS framework
+- **Axios** - HTTP client for API requests
+- **React Query** - Data fetching and caching library
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Java 17+ (OpenJDK recommended)
 - Node.js 16+
-- 
+- Microsoft SQL Server (Express or higher)
 - Maven 3.8+
 
 ### Database Setup
@@ -59,6 +73,7 @@ GO
 -- Grant permissions
 EXEC sp_addrolemember 'db_owner', 'bookmark';
 GO
+```
 
 ### Backend Setup
 
@@ -134,7 +149,7 @@ developer-bookmark-manager/
 ### Backend
 - IntelliJ IDEA / Eclipse
 - Postman for API testing
-- pgAdmin for database management
+- SQL Server Management Studio (SSMS) for database management
 
 ### Frontend
 - VS Code with extensions:
@@ -174,11 +189,14 @@ npm test
 
 ### Backend
 - If port 8080 is in use, modify `server.port` in `application.properties`
-- For database connection issues, ensure MSSQL is running
+- For database connection issues, ensure MS SQL Server is running and accessible
+- Check that the SQL Server is configured to allow SQL Server Authentication
+- Verify firewall settings allow connections on port 1433
 
 ### Frontend
 - If port 3000 is in use, Vite will automatically suggest another port
-- For CORS issues, check backend configuration
+- For CORS issues, check backend configuration in `application.properties`
+- Clear browser cache if experiencing unexpected behavior
 
 ## 👥 Team
 
