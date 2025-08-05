@@ -16,9 +16,6 @@ A comprehensive web application that assists developers in organizing, storing, 
 ### Dark Theme
 ![Hero Image Dark](docs/hero-dark.png)
 
-### Light Theme
-![Hero Image Light](docs/hero-light.png)
-
 ## 🌟 Key Features
 
 ### Bookmark Management
