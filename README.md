@@ -6,9 +6,12 @@
   <br/>
 </div>
 
-A comprehensive web application that assists developers in organizing, storing, and sharing valuable programming resources efficiently.
+A comprehensive web application that assists developers in organizing, storing, and sharing valuable programming resources and code snippets efficiently.
 
 ## 📸 Screenshots
+
+### Landing Page
+![Landing Page](docs/landingpage.png)
 
 ### Dark Theme
 ![Hero Image Dark](docs/hero-dark.png)
@@ -18,12 +21,23 @@ A comprehensive web application that assists developers in organizing, storing, 
 
 ## 🌟 Key Features
 
-- **Bookmark Management**: Easily perform CRUD operations on both bookmarks and collections.
-- **Smart Tagging**: Organize your bookmarks using intuitive custom tags.
-- **Link Validation**: Automatic checking for dead links
+### Bookmark Management
+- **CRUD Operations**: Create, read, update, and delete bookmarks and collections
+- **Smart Tagging**: Organize bookmarks with custom tags for easy categorization
+- **Link Validation**: Automatic checking for dead or broken links
+- **Collections**: Group related bookmarks into organized collections
+
+### Code Snippet Management
+- **Code Block Storage**: Save and organize code snippets with syntax highlighting
+- **Multiple Languages**: Support for various programming languages
+- **Snippet Categories**: Organize code blocks by language, framework, or purpose
+- **Quick Copy**: One-click copying of code snippets to clipboard
+
+### General Features
 - **Import/Export**: JSON format support for data portability
-- **Search & Filter**: Find bookmarks by title, tags, or collection
-- **Responsive UI**: Clean interface with dark mode support
+- **Advanced Search**: Find bookmarks and code snippets by title, tags, content, or collection
+- **Responsive UI**: Clean, modern interface with dark/light mode support
+- **User Authentication**: Secure login with JWT-based authentication
 
 ## 🛠️ Tech Stack
 
